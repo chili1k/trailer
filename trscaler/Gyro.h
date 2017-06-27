@@ -6,16 +6,14 @@
 #ifndef Gyro_h
 #define Gyro_h
 
-enum Position { UnderBalanced, Levelled, OverBalanced };
+enum Position { UnderBalanced, Balanced, OverBalanced };
 
 class Gyro {
   public:
     Gyro();
     Position getPitchPosition();
     Position getRollPosition();
-    bool isLevelled();
-    int getRoll();
-    int getPitch();
+    bool isBalanced();
   private:
 //    MPU6050 mpu;
     void setup();

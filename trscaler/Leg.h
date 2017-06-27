@@ -6,17 +6,17 @@
 #ifndef Leg_h
 #define Leg_h
 
-enum LegPosition { Collapsed, Expanding, Levelling, Final, Error };
+enum LegPosition { Zero, Expanding, Ground, Final };
 
 class Leg {
   public:
-    Leg(int pinCollapsedPos, int pinFinalPos, int pinPowerMeter);
+    Leg(int pinZeroPos, int pinFinalPos, int pinPowerMeter);
     LegPosition getPosition();
+    
   private:
-    int pinCollapsedPos;
+    int pinZeroPos;
     int pinFinalPos;
     int pinPowerMeter;
-    bool isHighAmperage;
     void setup();
     bool isHighAmperage();
 };

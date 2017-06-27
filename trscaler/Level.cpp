@@ -12,129 +12,131 @@ Level::Level(Gyro *gyro, Motors *motors, Legs *legs, Display *display) {
 }
 
 LevelState Level::getState() {
-  if (gyro.isLevelled()) {
+  // Trailer can only be levelled if all legs are on ground
+  if (gyro->isBalanced() && allLegsOnGround()) {
     return Levelled;
   }
 
-  if (motors->motorA.getMotorState() != Stopped || 
-      motors->motorB.getMotorState != Stopped ||
-      motors->motorC.getMotorState != Stopped ||
-      motors->motorD.getMotorState != Stopped) {
-    return Moving;
-  }
-
-  if (legs->legA.getPosition() == Zero &&
-    legs->legB.getPosition() == Zero &&
-    legs->legC.getPosition() == Zero &&
-    legs->legD.getPosition() == Zero) {
-    return Zero;
+  if (legs->legA.getPosition() == legs->legB.getPosition() ==
+      legs->legC.getPosition() == legs->legD.getPosition() == Start) {
+    return Start;
   }
 }
 
-void Level::setState(LevelState desiredState) {  
-  switch (desiredState) {
-    case Stopped:
-      startStop();
-      break;
-    case Zero:
-      startZero();
-      break;
-    case Start:
-      startStart();
-      break;
-    case Levelled:
-      break;
-    case Moving:
-      break;
-    case Stopped:
-      break;
-    case Error:
-      break;
-  }
-
-  desiredStateFinal = desiredState;
+void Level::moveToStart() {
+  desiredState = Start;
+  
+  reverseMotorIfNotStart(&(legs->legA), &(motors->motorA));
+  reverseMotorIfNotStart(&(legs->legB), &(motors->motorB));
+  reverseMotorIfNotStart(&(legs->legC), &(motors->motorC));
+  reverseMotorIfNotStart(&(legs->legD), &(motors->motorD));
 }
 
-void Level::startZero() {
-  reverseMotorIfNotZero(legs->legA, motors->motorA);
-  reverseMotorIfNotZero(legs->legB, motors->motorB);
-  reverseMotorIfNotZero(legs->legC, motors->motorC);
-  reverseMotorIfNotZero(legs->legD, motors->motorD);
-}
-
-void Level::startLevel() {
-  if (getState() != Zero) {
-    display->println("Error: Move legs to zero first");
+void Level::startLevelling() {
+  if (getState() != Start) {
+    display->println("Error: Move legs to START first");
     return;
   }
 
-  motors->motorA.setState(Forward);
-  motors->motorB.setState(Forward);
-  motors->motorC.setState(Forward);
-  motors->motorD.setState(Forward);
+  desiredState = Levelled;
+
+  motors->motorA.start(Forward);
+  motors->motorB.start(Forward);
+  motors->motorC.start(Forward);
+  motors->motorD.start(Forward);
 }
 
-void Level::startStop() {
-  motors->motorA.stop();
-  motors->motorB.stop();
-  motors->motorC.stop();
-  motors->motorD.stop();
-}
-
-void Level::reverseMotorIfNotZero(Leg *leg, Motor *motor) {
+void Level::reverseMotorIfNotStart(Leg *leg, Motor *motor) {
   if (leg->getPosition() != Zero) {
-    motor->setState(Reverse);
+    motor->start(Reverse);
   }
 }
 
 void Level::loop() {
-  switch (desiredFinalState): {
-    case None:
-      break;
-    case Level:
-      loopLevel();
-      break;    
-    case Zero:
-      loopZero();
-      break;
-  }
-}
-
-void Level::loopZero() {
-  stopMotorIfZero(legs->legA, motors->motorA);
-  stopMotorIfZero(legs->legB, motors->motorB);
-  stopMotorIfZero(legs->legC, motors->motorC);
-  stopMotorIfZero(legs->legD, motors->motorD);
-}
-
-void Level::loopLevel() {
-  // Don't do anything when not in motion
-  if (getState != Moving) {
+  // Always check zero or final state for safety
+  loopStartOrFinal();
+  
+  if (desiredState == None) {
     return;
   }
-  
+
+  // Stop everything if any motors stopped during levelling
+  if (desiredState == Levelled && anyMotorStopped()) {
+    stopAllMotors();
+    display->println("Error levelling. All motors stopped.");
+    desiredState = None;
+  }
+
+  if (desiredState == Levelled && allLegsOnGround()) {
+    loopLevel();
+  }
+}
+
+void Level::loopStartOrFinal() {
+  stopMotorIfZeroOrFinal(&(legs->legA), &(motors->motorA));
+  stopMotorIfZeroOrFinal(&(legs->legB), &(motors->motorB));
+  stopMotorIfZeroOrFinal(&(legs->legC), &(motors->motorC));
+  stopMotorIfZeroOrFinal(&(legs->legD), &(motors->motorD));
+}
+
+bool Level::anyMotorStopped() {
+  return (motors->motorA.isStopped() || motors->motorB.isStopped() || motors->motorC.isStopped() || motors->motorD.isStopped());
+}
+
+void Level::loopLevel() {  
   if (getState() == Levelled) {
-    stop();
+    stopAllMotors();
+    desiredState = None;
   }
 
-  if (gyro->getPitchPosition() == UnderBalanced && gyro.getRollPosition() == UnderBalanced) {
-    motors->motorC.setState(Forward);
-  } else if (gyro->getPitchPosition() == UnderBalanced && gyro.getRollPosition() == OverBalanced) {
-    motors->motorA.setState(Forward);
-  } else if (gyro->getPitchPosition() == OverBalanced && gyro.getRollPosition() == OverBalanced) {
-    motors->motorB.setState(Forward);
-  } else if (gyro->getPitchPosition() == OverBalanced && gyro.getRollPosition() == UnderBalanced) {
-    motors->motorD.setState(Forward);
+  if (gyro->getPitchPosition() == UnderBalanced && gyro->getRollPosition() == UnderBalanced) {
+    startSingleMotor(&(motors->motorC));
+  } else if (gyro->getPitchPosition() == UnderBalanced && gyro->getRollPosition() == OverBalanced) {
+    startSingleMotor(&(motors->motorA));
+  } else if (gyro->getPitchPosition() == OverBalanced && gyro->getRollPosition() == OverBalanced) {
+    startSingleMotor(&(motors->motorB));
+  } else if (gyro->getPitchPosition() == OverBalanced && gyro->getRollPosition() == UnderBalanced) {
+    startSingleMotor(&(motors->motorD));
   }
 }
 
-void Level::stopMotorIfZero(Leg *leg, Motor *motor) {
-  if (leg->getPosition() == Zero && motor->getState() != Stopped) {
+void Level::startSingleMotor(Motor *motor) {
+  // Check if any other motor is already running
+  if (motor->isStopped()) {
+    stopAllMotors();
+    motor->start(Forward);
+  }
+}
+
+/**
+ * Determines if all legs are on ground
+ */
+bool Level::allLegsOnGround() {
+  return legs->legA.getPosition() == legs->legB.getPosition() ==
+         legs->legC.getPosition() == legs->legD.getPosition() == Ground;
+}
+
+void Level::stopMotorIfZeroOrFinal(Leg *leg, Motor *motor) {
+  if ( (leg->getPosition() == Zero && motor->isStopped()) ||
+       (leg->getPosition() == Final && motor->isStopped()) ) {
     motor->stop();
+    
+    display->print("Motor ");
+    display->print(motor->getName());
+    display->print(" stopped.");
+    
+    if (leg->getPosition() == Zero) {
+      display->print("Motor reached ZERO position.");
+    } else {
+      display->print("Motor reached FINAL position.");
+    }
   }
 }
 
-void Level::stop() {
-  setState(Stopped);
+void Level::stopAllMotors() {
+  motors->motorA.stop();
+  motors->motorB.stop();
+  motors->motorC.stop();
+  motors->motorD.stop();  
 }
 

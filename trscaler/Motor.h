@@ -6,19 +6,21 @@
 #ifndef Motor_h
 #define Motor_h
 
-enum MotorState { Stopped, Forward, Reverse };
+enum Direction { Forward, Reverse, Stopped };
 
 class Motor {
   public:
-    Motor(int forwardPin, int reversePin);
-    void setState(MotorState newState);
+    Motor(char *name, int forwardPin, int reversePin);
+    char* getName();
+    void start(Direction newDirection);
     void stop();
-    MotorState getState();
+    bool isStopped();
+    Direction getDirection();
   private:
     int forwardPin;
     int reversePin;
-    MotorState oldState;
-    MotorState currentState;
+    Direction currentDirection;
+    char *name;
     void setup();
 };
 

@@ -34,25 +34,32 @@ struct Legs {
   Leg legD;
 };
 
-enum LevelState { Zero, Levelled, Moving, Error, None };
+enum LevelState { Start, Levelled, None };
 
 class Level {
   public:
     Level(Gyro *gyro, Motors *motors, Legs *legs, Display *display);
-    LevelState getState();
-    void setState(LevelState desiredState);
+    LevelState Level::getState();
     void loop();
-    void level();
-    bool isMoving();
-    void stop();
+    void moveToStart();
+    void startLevelling();
+    void startStop();
   private:
     Gyro *gyro;
     Motors *motors;
     Legs *legs;
     Display *display;
-    LevelState desiredStateFinal;
-    LevelState desiredStateCurrent;
-    Level::stopMotors();
+    LevelState desiredState;
+    void reverseMotorIfNotStart(Leg *leg, Motor *motor);
+    void loopStartOrFinal();
+    void loopLevel();
+    bool anyMotorStopped();
+    void startSingleMotor(Motor *motor);
+    bool allLegsOnGround();
+    void stopMotorIfZeroOrFinal(Leg *leg, Motor *motor);
+    void stopAllMotors();
+    
+    
 };
 
 #endif

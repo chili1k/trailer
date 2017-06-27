@@ -16,6 +16,17 @@ Gyro::Gyro() {
   setup();
 }
 
+Position Gyro::getPitchPosition() {
+  return UnderBalanced;
+}
+
+Position Gyro::getRollPosition() {
+  return UnderBalanced;
+}
+
+bool Gyro::isBalanced() {
+  return false;
+}
 
 void Gyro::setup() {
   

@@ -8,7 +8,8 @@
 
 class Display {
   public:
-    println(char *message);
+    void print(const char *message);
+    void println(const char *message);
   private:
     void setup();
 };

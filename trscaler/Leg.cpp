@@ -1,43 +1,38 @@
-#include "NPN.h"
+#include "Leg.h"
 #include "Arduino.h"
 
-Leg::Leg(int pinZeroPos, int pinCollapsedPos, int pinPowerMeter) {
-  this->pin = pin;
+Leg::Leg(int pinZeroPos, int pinFinalPos, int pinPowerMeter) {
   this->pinZeroPos = pinZeroPos;
-  this->pinCollapsedPos = pinCollapsedPos;
+  this->pinFinalPos = pinFinalPos;
   this->pinPowerMeter = pinPowerMeter;
   setup();
 }
 
 void Leg::setup() {
   pinMode(pinZeroPos, INPUT);
-  pinMode(pinCollapsedPos, INPUT);
+  pinMode(pinFinalPos, INPUT);
 
   // TODO
   pinMode(pinPowerMeter, INPUT);
 }
 
 LegPosition Leg::getPosition() {
-  if (digitalRead(pinCollapsedPos) == HIGH) {
-    return Collapsed;
+  if (digitalRead(pinZeroPos) == HIGH) {
+    return Zero;
   }
 
-  if (digitalRead(pinFinal) == HIGH) {
-    return Collapsed;
+  if (digitalRead(pinFinalPos) == HIGH) {
+    return Final;
   }
 
-  isHighAmperage = isHighAmperage();
-
-  if (isHighAmperage) {
-    return Levelling;
-  } else {
-    return Expanding;
+  if (isHighAmperage()) {
+    return Ground;
   }
 
-  return Error;
+  return Expanding;
 }
 
-bool Leg:isHighAmperage() {
+bool Leg::isHighAmperage() {
   // TODO
   return false;
 }

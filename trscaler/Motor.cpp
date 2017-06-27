@@ -1,14 +1,16 @@
 #include "Motor.h"
 #include "Arduino.h"
 
-Motor::Motor(int forwardPin, int reversePin) {
+Motor::Motor(char *name, int forwardPin, int reversePin) {
   this->forwardPin = forwardPin;
   this->reversePin = reversePin;
-  this->currentState = Stopped;
-  this->oldState = Stopped;
-  this->oldState = false;
-  this->
+  this->currentDirection = Stopped;
+  this->name = name;
   setup();
+}
+
+char* Motor::getName() {
+  return name;
 }
 
 void Motor::setup() {
@@ -16,40 +18,33 @@ void Motor::setup() {
   pinMode(reversePin, OUTPUT);
 }
 
-void Motor::setState(MotorState newState) {
-  if (currentState == newState) {
-    return;  
+void Motor::start(Direction newDirection) {
+  if (currentDirection == newDirection) {
+    return;
   }
+
+    // Make sure motor is stopped before changing direction
+  digitalWrite(forwardPin, false);
+  digitalWrite(reversePin, false);
   
-  // Make sure motor is stopped first
-  stop();
-
-  switch (newState) {
-    case Forward:
-      digitalWrite(forwardPin, true);
-      break;
-    case Reverse:
-      digitalWrite(reversePin, true);
-      break;
-    case Stopped:
-      digitalWrite(forwardPin, false);
-      digitalWrite(reversePin, false);
-      break;
+  if (newDirection == Forward) {
+    digitalWrite(forwardPin, true);
+  } else if (newDirection == Reverse) {
+    digitalWrite(reversePin, true);
   }
 
-  oldState = currentState;
-  currentState = newState;
+  currentDirection = newDirection;
 }
 
-MotorState Motor:getCurrentState() {
-  return currentState;
+bool Motor::isStopped() {
+  return currentDirection == Stopped;
 }
 
-MotorState Motor:getOldState() {
-  return currentState;
+Direction Motor::getDirection() {
+  return currentDirection;
 }
 
 void Motor::stop() {
-  setState(Stopped);
+  start(Stopped);
 }
 

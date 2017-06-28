@@ -13,13 +13,18 @@
 #include "Display.h"
 
 /*
-A .            B
-|--------------|
-|*.            |
-| .            |
-|--------------| 
-C              D
+
+      roll
+       -  A            B 
+pitch  -  +------------+  + pitch
+          |o  vcc      |
+          |            |
+          +------------+
+          C            D
+       +
+      roll
 */
+
 struct Motors {
   Motor motorA;
   Motor motorB;
@@ -39,7 +44,7 @@ enum LevelState { Start, Levelled, None };
 class Level {
   public:
     Level(Gyro *gyro, Motors *motors, Legs *legs, Display *display);
-    LevelState Level::getState();
+    LevelState getState();
     void loop();
     void moveToStart();
     void startLevelling();

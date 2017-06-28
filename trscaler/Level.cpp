@@ -89,10 +89,12 @@ void Level::loopLevel() {
     desiredState = None;
   }
 
+  // Could also be A and C at the same time
   if (gyro->getPitchPosition() == UnderBalanced && gyro->getRollPosition() == UnderBalanced) {
-    startSingleMotor(&(motors->motorC));
-  } else if (gyro->getPitchPosition() == UnderBalanced && gyro->getRollPosition() == OverBalanced) {
     startSingleMotor(&(motors->motorA));
+  } else if (gyro->getPitchPosition() == UnderBalanced && gyro->getRollPosition() == OverBalanced) {
+    startSingleMotor(&(motors->motorC));
+  // Could also be B and D at the same time
   } else if (gyro->getPitchPosition() == OverBalanced && gyro->getRollPosition() == OverBalanced) {
     startSingleMotor(&(motors->motorB));
   } else if (gyro->getPitchPosition() == OverBalanced && gyro->getRollPosition() == UnderBalanced) {

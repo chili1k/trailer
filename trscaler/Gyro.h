@@ -14,9 +14,12 @@ class Gyro {
     Position getPitchPosition();
     Position getRollPosition();
     bool isBalanced();
+    void loop();
+    bool setup();
   private:
-//    MPU6050 mpu;
-    void setup();
+    float pitch;
+    float roll;
+    void printPitchRoll();
 };
 
 #endif

@@ -1,9 +1,12 @@
+#include "Gyro.h"
+
+Gyro gyro;
+
 void setup() {
-  // put your setup code here, to run once:
+  gyro.setup();
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  gyro.loop();
 }

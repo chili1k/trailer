@@ -1,24 +1,41 @@
-/*
-  Leg.h - Leg position
-  Created by Mitja Bezensek, Jun 20, 2017
-*/
-
 #ifndef Leg_h
 #define Leg_h
 
-enum LegPosition { Zero, Expanding, Ground, Final };
+#include "Motor.h"
+
+enum LegPosition { Unknown, Expanding, Collapsing, Zero, Final };
+
+struct LegConfig {
+  char *name;
+  int pinMotorForward;
+  int pinMotorReverse;
+  int pinZeroPos;
+  int pinFinalPos;
+  int pinPowerMeter;
+};
 
 class Leg {
   public:
-    Leg(int pinZeroPos, int pinFinalPos, int pinPowerMeter);
+    Leg(LegConfig *legConfig);
+    void loop();
+    void setup();
+    const char *getName();
+
+    // Actions
+    void expand(); 
+    void collapse();
+    void stop();
+
+    bool isOnGround();
+    bool isMotorRunning();
+    bool isMotorStopped();
+    bool isHighAmperage();
     LegPosition getPosition();
     
   private:
-    int pinZeroPos;
-    int pinFinalPos;
-    int pinPowerMeter;
-    void setup();
-    bool isHighAmperage();
+    Motor *motor;
+    bool _isOnGround;
+    LegConfig *legConfig;
 };
 
 #endif

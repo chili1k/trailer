@@ -1,21 +1,21 @@
 #include "Motor.h"
 #include "Arduino.h"
 
-Motor::Motor(char *name, int forwardPin, int reversePin) {
+Motor::Motor(int forwardPin, int reversePin) {
   this->forwardPin = forwardPin;
   this->reversePin = reversePin;
   this->currentDirection = Stopped;
-  this->name = name;
-  setup();
-}
-
-char* Motor::getName() {
-  return name;
+  this->setupDone = false;
 }
 
 void Motor::setup() {
+  if (setupDone) {
+    return;
+  }
+
   pinMode(forwardPin, OUTPUT);
   pinMode(reversePin, OUTPUT);
+  setupDone = true;
 }
 
 void Motor::start(Direction newDirection) {
@@ -23,7 +23,7 @@ void Motor::start(Direction newDirection) {
     return;
   }
 
-    // Make sure motor is stopped before changing direction
+  // Make sure motor is stopped before changing direction
   digitalWrite(forwardPin, false);
   digitalWrite(reversePin, false);
   
@@ -40,6 +40,9 @@ bool Motor::isStopped() {
   return currentDirection == Stopped;
 }
 
+bool Motor::isRunning() {
+  return !isStopped();
+}
 Direction Motor::getDirection() {
   return currentDirection;
 }

@@ -1,8 +1,3 @@
-/*
-  Motor.h - Motor controlled by relays
-  Created by Mitja Bezensek, Jun 20, 2017
-*/
-
 #ifndef Motor_h
 #define Motor_h
 
@@ -10,18 +5,19 @@ enum Direction { Forward, Reverse, Stopped };
 
 class Motor {
   public:
-    Motor(char *name, int forwardPin, int reversePin);
-    char* getName();
+    Motor(int forwardPin, int reversePin);
+    void setup();
+
     void start(Direction newDirection);
     void stop();
     bool isStopped();
+    bool isRunning();
     Direction getDirection();
   private:
     int forwardPin;
     int reversePin;
+    bool setupDone;
     Direction currentDirection;
-    char *name;
-    void setup();
 };
 
 #endif

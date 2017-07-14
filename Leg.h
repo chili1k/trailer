@@ -3,6 +3,13 @@
 
 #include "Motor.h"
 
+#define MAX_LEGS 4
+#define LEG_A 0
+#define LEG_B 1
+#define LEG_C 2
+#define LEG_D 3
+
+
 enum LegPosition { Unknown, Expanding, Collapsing, Zero, Final };
 
 struct LegConfig {

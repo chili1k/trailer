@@ -19,14 +19,7 @@ pitch  -  +------------+  + pitch
       roll
 */
 
-struct Legs {
-  Leg legA;
-  Leg legB;
-  Leg legC;
-  Leg legD;
-};
-
-enum TrailerState { None, Zero, Balanced, Final, Error };
+enum TrailerState { NoneState, ZeroState, BalancedState, FinalState, ErrorState };
 
 class Balance {
   public:
@@ -42,7 +35,8 @@ class Balance {
 
   private:
     Gyro *gyro;
-    Leg *legA, *legB, *legC, *legD;
+    // LegA, LegB, LegC, LegD
+    Leg *legs[];
     Display display;
     TrailerState desiredState;
 

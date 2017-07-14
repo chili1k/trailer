@@ -3,17 +3,19 @@
 #include "Display.h"
 #include "Arduino.h"
 
-#include "TrailerStateManager.h"
+#include "Balance.h"
 
-TrailerStateManager::TrailerStateManager(Gyro *gyro, Legs *legs) {
+Balance::Balance(Gyro *gyro, Legs *legs) {
   this->gyro = gyro;
   this->legA = &legs->legA;
   this->legB = &legs->legB;
   this->legC = &legs->legC;
   this->legD = &legs->legD;
+
+  this->desiredState = None;
 }
 
-void TrailerStateManager::setup() {
+void Balance::setup() {
   legA->setup();
   legB->setup();
   legC->setup();
@@ -23,22 +25,30 @@ void TrailerStateManager::setup() {
   display.setup();
 }
 
-DesiredState TrailerStateManager::getState() {
+/**
+ * Determine Trailer state from sensor data
+ */
+DesiredState Balance::determineState() {
   // Trailer can only be balanced if all legs are on ground
   if (gyro->isBalanced() && allLegsOnGround()) {
-    return Levelled;
+    return Balanced;
   }
 
   if ((legA->getPosition() == Zero) && (legB->getPosition() == Zero) &&
       (legC->getPosition() == Zero) && (legD->getPosition() == Zero)) {
-    return Start;
+    return Zero;
   }
 
-  return None;
+  if ((legA->getPosition() == Final) && (legB->getPosition() == Final) &&
+      (legC->getPosition() == Final) && (legD->getPosition() == Final)) {
+    return Final;
+  }
+
+  return Unknown;
 }
 
-void TrailerStateManager::toZero() {
-  desiredState = Start;
+void Balance::toZero() {
+  desiredState = Zero;
   
   collapseLegIfNotZero(legA);
   collapseLegIfNotZero(legB);
@@ -46,27 +56,22 @@ void TrailerStateManager::toZero() {
   collapseLegIfNotZero(legD);
 }
 
-void TrailerStateManager::toBalanced() {
-  if (getState() != Start) {
+void Balance::balance() {
+  if (getState() != Zero) {
     display.println("Error: Move legs to START first");
     return;
   }
 
-  desiredState = Levelled;
-
-  legA->expand();
-  legB->expand();
-  legC->expand();
-  legD->expand();
+  desiredState = Balanced;
 }
 
-void TrailerStateManager::collapseLegIfNotZero(Leg *leg) {
+void Balance::collapseLegIfNotZero(Leg *leg) {
   if (leg->getPosition() != Zero) {
     leg->collapse();
   }
 }
 
-void TrailerStateManager::loop() {
+void Balance::loop() {
   legA->loop();
   legB->loop();
   legC->loop();
@@ -82,24 +87,20 @@ void TrailerStateManager::loop() {
     return;
   }
 
-  // Stop everything if any motors stopped during levelling
-  if (desiredState == Levelled && anyMotorStopped()) {
+  // Stop everything if any motors stopped during balancing
+  if (desiredState == Balanced && anyMotorStopped()) {
     stopAllMotors();
     display.println("Error levelling. All motors stopped.");
     desiredState = None;
   }
 
-  if (desiredState == Levelled && allLegsOnGround()) {
+  if (desiredState == Balanced && allLegsOnGround()) {
     loopLevel();
   }
 }
 
-bool TrailerStateManager::anyMotorStopped() {
-  return legA->isMotorStopped() || legB->isMotorStopped() || legC->isMotorStopped() || legD->isMotorStopped();
-}
-
-void TrailerStateManager::loopLevel() {  
-  if (getState() == Levelled) {
+void Balance::loopLevel() {  
+  if (getState() == Balanced) {
     stopAllMotors();
     desiredState = None;
   }
@@ -117,7 +118,7 @@ void TrailerStateManager::loopLevel() {
   }
 }
 
-void TrailerStateManager::expandLeg(Leg *leg) {
+void Balance::expandLeg(Leg *leg) {
   // Check if any other motor is already running
   if (leg->isMotorStopped()) {
     stopAllMotors();
@@ -128,11 +129,11 @@ void TrailerStateManager::expandLeg(Leg *leg) {
 /**
  * Determines if all legs are on ground
  */
-bool TrailerStateManager::allLegsOnGround() {
+bool Balance::allLegsOnGround() {
   return legA->isOnGround() && legB->isOnGround() && legC->isOnGround() && legD->isOnGround();
 }
 
-void TrailerStateManager::stopMotorIfZeroOrFinal(Leg *leg) {
+void Balance::stopMotorIfZeroOrFinal(Leg *leg) {
   if ( (leg->getPosition() == Zero && leg->isMotorRunning()) ||
        (leg->getPosition() == Final && leg->isMotorRunning()) ) {
     leg->stop();
@@ -149,7 +150,23 @@ void TrailerStateManager::stopMotorIfZeroOrFinal(Leg *leg) {
   }
 }
 
-void TrailerStateManager::stopAllMotors() {
+bool Balance::() {
+  return legA->isMotorRunning() || legB->isMotorRunning() || legC->isMotorRunning() || legD->isMotorRunning();
+}
+
+bool Balance::allMotorsStopped() {
+  return legA->isMotorStopped() && legB->isMotorStopped() && legC->isMotorStopped() && legD->isMotorStopped();
+}
+
+bool Balance::anyMotorRunning() {
+  return legA->isMotorRunning() || legB->isMotorRunning() || legC->isMotorRunning() || legD->isMotorRunning();
+}
+
+bool Balance::anyMotorStopped() {
+  return legA->isMotorStopped() || legB->isMotorStopped() || legC->isMotorStopped() || legD->isMotorStopped();
+}
+
+void Balance::stopAllMotors() {
   legA->stop();
   legB->stop();
   legC->stop();

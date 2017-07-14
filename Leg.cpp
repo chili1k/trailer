@@ -28,6 +28,11 @@ void Leg::loop() {
   if (motor->isRunning()) {
     _isOnGround = isHighAmperage();
   }
+
+  // Safety - do not allow leg over final position
+  if (getPosition() == Final) {
+    motor->stop();
+  }
 }
 
 void Leg::expand() {

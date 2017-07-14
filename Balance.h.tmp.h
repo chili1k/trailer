@@ -1,5 +1,5 @@
-#ifndef TrailerStateManager_h
-#define TrailerStateManager_h
+#ifndef Balance_h
+#define Balance_h
 
 #include "Motor.h"
 #include "Gyro.h"
@@ -26,35 +26,34 @@ struct Legs {
   Leg legD;
 };
 
-enum DesiredState { Start, Levelled, None };
-//enum TrailerState { Zero, Expanding to ground, Ground, Balancing, Balanced, Final, Error };
+enum TrailerState { None, Zero, Balanced, Final, Error };
 
-class TrailerStateManager {
+class Balance {
   public:
-    TrailerStateManager(Gyro *gyro, Legs *legs);
-    DesiredState getState();
+    Balance(Gyro *gyro, Legs *legs);
+    TrailerState getState();
     void setup();
     void loop();
 
+    void stopAllMotors();
+    void balance();
     void toZero();
-    //void toGround();
-    void toBalanced();
+    void startMotor(char legId);
 
   private:
     Gyro *gyro;
     Leg *legA, *legB, *legC, *legD;
     Display display;
-    DesiredState desiredState;
+    TrailerState desiredState;
 
     void collapseLegIfNotZero(Leg *leg);
     void loopLevel();
-    bool anyMotorStopped();
     void expandLeg(Leg *leg);
     bool allLegsOnGround();
     void stopMotorIfZeroOrFinal(Leg *leg);
+    bool anyMotorRunning();
+    bool anyMotorStopped();
     void stopAllMotors();
-    
-    
 };
 
 #endif

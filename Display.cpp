@@ -2,7 +2,7 @@
 #include "Arduino.h"
 
 void Display::setup() {
-  Serial.begin(9600); 
+  Serial.begin(115200); 
 }
 
 void Display::print(const char *message) {

@@ -13,7 +13,7 @@
 enum LegPosition { Unknown, Expanding, Collapsing, Zero, Final };
 
 struct LegConfig {
-  char *name;
+  const char *name;
   int pinMotorForward;
   int pinMotorReverse;
   int pinZeroPos;

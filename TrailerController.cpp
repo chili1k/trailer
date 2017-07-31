@@ -5,36 +5,37 @@
 #include "Gyro.h"
 #include "Display.h"
 #include "Balancer.h"
+#include "Config.h"
 
 TrailerController::TrailerController() {
   LegConfig legConfigs[] = {
-    { .name = "LegA",
-      .pinMotorForward = 22,
-      .pinMotorReverse = 23,
-      .pinZeroPos = 24,
-      .pinFinalPos = 25,
-      .pinPowerMeter = 0
+    { .name = LEG_A_NAME,
+      .pinMotorForward = LEG_A_PIN_MOTOR_FORWARD,
+      .pinMotorReverse = LEG_A_PIN_MOTOR_REVERSE,
+      .pinZeroPos = LEG_A_PIN_MOTOR_ZEROPOS,
+      .pinFinalPos = LEG_A_PIN_MOTOR_FINALPOS,
+      .pinPowerMeter = LEG_A_PIN_MOTOR_POWERMETER
     },
-    { .name = "LegB",
-      .pinMotorForward = 26,
-      .pinMotorReverse = 27,
-      .pinZeroPos = 28,
-      .pinFinalPos = 29,
-      .pinPowerMeter = 1
+    { .name = LEG_B_NAME,
+      .pinMotorForward = LEG_B_PIN_MOTOR_FORWARD,
+      .pinMotorReverse = LEG_B_PIN_MOTOR_REVERSE,
+      .pinZeroPos = LEG_B_PIN_MOTOR_ZEROPOS,
+      .pinFinalPos = LEG_B_PIN_MOTOR_FINALPOS,
+      .pinPowerMeter = LEG_B_PIN_MOTOR_POWERMETER
     },
-    { .name = "LegC",
-      .pinMotorForward = 30,
-      .pinMotorReverse = 31,
-      .pinZeroPos = 32,
-      .pinFinalPos = 33,
-      .pinPowerMeter = 2
+    { .name = LEG_C_NAME,
+      .pinMotorForward = LEG_C_PIN_MOTOR_FORWARD,
+      .pinMotorReverse = LEG_C_PIN_MOTOR_REVERSE,
+      .pinZeroPos = LEG_C_PIN_MOTOR_ZEROPOS,
+      .pinFinalPos = LEG_C_PIN_MOTOR_FINALPOS,
+      .pinPowerMeter = LEG_C_PIN_MOTOR_POWERMETER
     },
-    { .name = "LegD",
-      .pinMotorForward = 34,
-      .pinMotorReverse = 35,
-      .pinZeroPos = 36,
-      .pinFinalPos = 37,
-      .pinPowerMeter = 3
+    { .name = LEG_D_NAME,
+      .pinMotorForward = LEG_D_PIN_MOTOR_FORWARD,
+      .pinMotorReverse = LEG_D_PIN_MOTOR_REVERSE,
+      .pinZeroPos = LEG_D_PIN_MOTOR_ZEROPOS,
+      .pinFinalPos = LEG_D_PIN_MOTOR_FINALPOS,
+      .pinPowerMeter = LEG_D_PIN_MOTOR_POWERMETER
     }
   };
 

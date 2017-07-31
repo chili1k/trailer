@@ -4,15 +4,7 @@
 #include "Display.h"
 #include "Leg.h"
 #include "Gyro.h"
-
-/**
- How long to wait after a leg motor is shut down in milliseconds.
- */
-#define STOP_MOTORS_DLY 100
-/**
- Minimum time leg expands in milliseconds.
- */
-#define EXPAND_LEG_DLY 1000
+#include "Config.h"
 
 enum State { NoState, ZeroState, ToZeroState, BalancedState, BalancingState, FinalState, ErrorState };
 

@@ -181,6 +181,3 @@ bool Gyro::isBalanced() {
   }
   return isBalanced;
 }
-
-
-

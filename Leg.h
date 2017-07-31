@@ -2,13 +2,13 @@
 #define Leg_h
 
 #include "Motor.h"
+#include "lib/Smooth.h"
 
 #define MAX_LEGS 4
 #define LEG_A 0
 #define LEG_B 1
 #define LEG_C 2
 #define LEG_D 3
-
 
 enum LegPosition { Unknown, Expanding, Collapsing, Zero, Final };
 
@@ -38,11 +38,13 @@ class Leg {
     bool isMotorStopped();
     bool isHighAmperage();
     LegPosition getPosition();
+    float getAmpers();
     
   private:
     Motor *motor;
     bool _isOnGround;
     LegConfig *legConfig;
+    Smooth smoother;
 };
 
 #endif

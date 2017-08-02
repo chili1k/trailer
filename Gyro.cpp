@@ -26,7 +26,6 @@ uint8_t fifoBuffer[64]; // FIFO storage buffer
 Quaternion q;           // [w, x, y, z]         quaternion container
 VectorFloat gravity;    // [x, y, z]            gravity vector
 
-float ypr[3];           // yaw, pitch, roll
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 
 unsigned long lastPrintTime = 0;
@@ -130,6 +129,10 @@ void Gyro::loop() {
       roll = round(ypr[2]*100.0)/100.0;
       printPitchRoll();
     }
+}
+
+float *Gyro::getYPR() {
+  return ypr;
 }
 
 void Gyro::printPitchRoll() {

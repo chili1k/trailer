@@ -16,10 +16,15 @@ class Gyro {
     bool isBalanced();
     void loop();
     bool setup();
+    float *getYPR();
+
   private:
     float pitch;
     float roll;
     void printPitchRoll();
+    // yaw, pitch, roll
+    float ypr[3];
+
 };
 
 #endif

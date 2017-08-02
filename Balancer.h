@@ -1,7 +1,6 @@
 #ifndef Balancer_h 
 #define Balancer_h 
 
-#include "Display.h"
 #include "Leg.h"
 #include "Gyro.h"
 #include "Config.h"
@@ -10,19 +9,27 @@ enum State { NoState, ZeroState, ToZeroState, BalancedState, BalancingState, Fin
 
 class Balancer {
   public:
-    Balancer(Leg **legs, Gyro *gyro, Display *display);
+    Balancer(Leg **legs, Gyro *gyro);
     void setup();
     void loop();
+    /**
+    * Move trailer to zero position
+    */
+    void toZero();
+    /**
+    * Balance trailer
+    */
+    void balance();
+    Leg **getLegs();
+    Gyro *getGyro();
+    State *getState();
 
   private:
     Leg **legs;
     Gyro *gyro;
-    Display *display;
     State state;
 
     void setState(State newState);
-    void toZero();
-    void balance();
 
     void expandLeg(Leg *leg);
 

@@ -7,10 +7,9 @@
 #include "Arduino.h"
 
 
-Balancer::Balancer(Leg **legs, Gyro *gyro, Display *display) {
+Balancer::Balancer(Leg **legs, Gyro *gyro) {
   this->legs = legs;
   this->gyro = gyro;
-  this->display = display;
   this->state = NoState;
 }
 
@@ -20,7 +19,6 @@ void Balancer::setup() {
   }
 
   gyro->setup();
-  display->setup();
 }
 
 void Balancer::loop() {
@@ -47,7 +45,7 @@ void Balancer::loop() {
       stateErrorLoop();
       break;
     default:
-      display->println("Unknown state.");
+      DPRINTLN("Unknown state.");
   }
 }
 
@@ -75,7 +73,7 @@ void Balancer::toZero() {
       stateErrorCmdToZero();
       break;
     default:
-      display->println("Unknown state.");
+      DPRINTLN("Unknown state.");
   }
 }
 
@@ -103,12 +101,24 @@ void Balancer::balance() {
       stateErrorCmdBalance();
       break;
     default:
-      display->println("Unknown state.");
+      DPRINTLN("Unknown state.");
   }
 }
 
 void Balancer::setState(State newState) {
   state = newState;
+}
+
+Leg **Balancer::getLegs() {
+  return legs;
+}
+
+Gyro *Balancer::getGyro() {
+  return gyro;
+}
+
+State *Balancer::getState() {
+  return &state;
 }
 
 /////// NoState
@@ -132,7 +142,7 @@ void Balancer::stateZeroLoop() {
 }
 
 void Balancer::stateZeroCmdToZero() {
-  display->println("Already at zero.");
+  DPRINTLN("Already at zero.");
 }
 
 void Balancer::stateZeroCmdBalance() {
@@ -161,11 +171,11 @@ void Balancer::stateToZeroLoop() {
 }
 
 void Balancer::stateToZeroCmdToZero() {
-  display->println("Already at zero.");
+  DPRINTLN("Already at zero.");
 }
 
 void Balancer::stateToZeroCmdBalance() {
-  display->println("Trailer is not at zero state yet.");
+  DPRINTLN("Trailer is not at zero state yet.");
 }
 
 /////// Balancing state
@@ -173,7 +183,7 @@ void Balancer::stateToZeroCmdBalance() {
 void Balancer::stateBalancingLoop() {
   // Trailer can only be balanced if all legs are on ground
   if (gyro->isBalanced() && LegUtil::allLegsOnGround(legs)) {
-    display->println("Trailed BALANCED!");
+    DPRINTLN("Trailed BALANCED!");
     LegUtil::stopAllMotors(legs);
     setState(BalancedState);
     return;
@@ -181,7 +191,7 @@ void Balancer::stateBalancingLoop() {
 
   // If all legs in final position
   if (LegUtil::allLegsInPosition(legs, Final)) {
-    display->println("Cannot balance. All legs reached final position.");
+    DPRINTLN("Cannot balance. All legs reached final position.");
     LegUtil::stopAllMotors(legs);
     setState(ErrorState);
     return;
@@ -218,7 +228,7 @@ void Balancer::stateBalancingCmdToZero() {
 }
 
 void Balancer::stateBalancingCmdBalance() {
-  display->println("Already balancing.");
+  DPRINTLN("Already balancing.");
 }
 
 /////// Balanced state
@@ -232,7 +242,7 @@ void Balancer::stateBalancedCmdToZero() {
 }
 
 void Balancer::stateBalancedCmdBalance() {
-  display->println("Already balanced.");
+  DPRINTLN("Already balanced.");
 }
 
 /////// Final state
@@ -246,7 +256,7 @@ void Balancer::stateFinalCmdToZero() {
 }
 
 void Balancer::stateFinalCmdBalance() {
-  display->println("Move to zero position first.");
+  DPRINTLN("Move to zero position first.");
 }
 
 /////// Error state
@@ -261,6 +271,6 @@ void Balancer::stateErrorCmdToZero() {
 
 void Balancer::stateErrorCmdBalance() {
   // Nothing to do
-  display->println("Move to zero position first.");
+  DPRINTLN("Move to zero position first.");
 }
 

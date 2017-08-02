@@ -37,6 +37,8 @@ class Leg {
     bool isMotorRunning();
     bool isMotorStopped();
     bool isHighAmperage();
+    bool isZero();
+    bool isFinal();
     LegPosition getPosition();
     float getAmpers();
     

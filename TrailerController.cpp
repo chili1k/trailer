@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include "TrailerController.h"
 #include "Display.h"
 #include "Leg.h"
@@ -49,6 +51,7 @@ TrailerController::TrailerController() {
 
   Balancer balancer(legs, &gyro); 
   this->balancer = &balancer;
+  lastRefreshTime = 0;
 }
 
 void TrailerController::setup() {
@@ -56,14 +59,90 @@ void TrailerController::setup() {
   display.setup();
 
   printTitle();
+  handleInput();
 }
 
 void TrailerController::loop() {
-  balancer->loop();
+  //balancer->loop();
+
+  // Main loop
+  refreshDisplay();
+  //handleInput();
+}
+
+void TrailerController::handleInput() {
+  if (Serial.available() > 0) {
+    int b = Serial.read();
+
+    switch (b) {
+      case '0':
+        display.println("Stopping all motors");
+        balancer->stopAllLegs();
+      case '1':
+        display.println("Starting BALANCE operation");
+        balancer->balance();
+      case '2':
+        display.println("Returning trailer to ZERO position");
+        balancer->toZero();
+      default:
+        display.println("Unkwnon command");
+    }
+  }
+}
+
+void TrailerController::refreshDisplay() {
+  unsigned long now = millis();
+
+  // Do not refresh display too often
+  if ((now - lastRefreshTime) < DISPLAY_REFRESH_MS) {
+    return;
+  }
+
+  lastRefreshTime = now;
+
+  printHeader();
+
+  display.println("Hello there");
+
+  Leg **leg = balancer->getLegs();
+  for (int i = 0; i < MAX_LEGS; i++) {
+    printLeg(leg[i]);  
+  }
+
+  display.newline();
+  printGyro();
+  display.newline();
+  printTrailerState();
+  display.println("--------------------------------------");
+  printCommands();
 }
 
 void TrailerController::printHeader() {
   display.println("Motor\tState\tCurrent");
+}
+
+void TrailerController::printTrailerState() {
+  State state = balancer->getState();
+
+  display.print("Trailer state: ");
+
+  switch (state) {
+    case NoState:
+      display.println("No State");
+    case ZeroState:
+      display.println("At Zero Position");
+    case ToZeroState:
+      display.println("Moving to Zero Position ...");
+    case BalancedState:
+      display.println("Balanced");
+    case BalancingState:
+      display.println("Balancing ...");
+    case FinalState:
+      display.println("At final position");
+    case ErrorState:
+    default:
+      display.println("Unknown trailer state!");
+  }
 }
 
 void TrailerController::printLeg(Leg *leg) {
@@ -77,7 +156,9 @@ void TrailerController::printLeg(Leg *leg) {
   display.newline();
 }
 
-void TrailerController::printGyro(Gyro *gyro) {
+void TrailerController::printGyro() {
+  Gyro *gyro = balancer->getGyro();
+
   float *ypr = gyro->getYPR();
   display.print("Gyro pitch, roll: [");
   display.print(ypr[0]);
@@ -113,6 +194,13 @@ void TrailerController::printLegPosition(Leg *leg) {
   }
 
   display.print(state);
+}
+
+void TrailerController::printCommands() {
+  display.println("0: Stop all motors");
+  display.println("1: Balance trailer");
+  display.println("2: Return to zero");
+  display.println("3: Start single motor");
 }
 
 void TrailerController::printTitle() {

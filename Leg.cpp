@@ -36,7 +36,7 @@ void Leg::loop() {
 
   // Safety - do not allow leg over final position
   if (getPosition() == Final) {
-    motor->stop();
+    stop();
   }
 }
 
@@ -47,6 +47,10 @@ void Leg::expand() {
   }
 
   motor->start(Forward);
+}
+
+void Leg::stop() {
+  motor->stop();
 }
 
 void Leg::collapse() {

@@ -2,7 +2,7 @@
 #define Leg_h
 
 #include "Motor.h"
-#include "lib/Smooth.h"
+#include "Smooth.h"
 
 #define MAX_LEGS 4
 #define LEG_A 0

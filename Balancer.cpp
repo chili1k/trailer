@@ -105,6 +105,15 @@ void Balancer::balance() {
   }
 }
 
+void Balancer::stopAllLegs() {
+  for (int i = 0; i < MAX_LEGS; i++) {
+    Leg *leg = legs[i];
+    leg->stop();
+  }
+
+  setState(ErrorState);
+}
+
 void Balancer::setState(State newState) {
   state = newState;
 }
@@ -117,8 +126,8 @@ Gyro *Balancer::getGyro() {
   return gyro;
 }
 
-State *Balancer::getState() {
-  return &state;
+State Balancer::getState() {
+  return state;
 }
 
 /////// NoState

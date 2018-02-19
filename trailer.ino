@@ -1,14 +1,11 @@
-#include "Gyro.h"
+#include "TrailerController.h"
 
-Gyro gyro;
+TrailerController trailerController; 
 
 void setup() {
-//  gyro.setup();
-  Serial.begin(115200);
+  trailerController.setup();
 }
 
 void loop() {
-//  gyro.loop();
-  Serial.println("Bla");
-  delay(1000);
+  trailerController.loop();
 }

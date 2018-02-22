@@ -4,6 +4,7 @@
 #include "Leg.h"
 #include "Gyro.h"
 #include "Config.h"
+#include "Display.h"
 
 enum State { NoState, ZeroState, ToZeroState, BalancedState, BalancingState, FinalState, ErrorState };
 
@@ -45,7 +46,6 @@ Leg Down
 
 class Balancer {
   public:
-    Balancer(Leg **legs, Gyro *gyro);
     void setup();
     void loop();
     // START Commands
@@ -60,18 +60,18 @@ class Balancer {
     void stopAllLegs();
     // END Commands
 
-    Leg **getLegs();
+    Leg *getLegs();
     Gyro *getGyro();
     State getState();
 
   private:
-    Leg **legs;
-    Gyro *gyro;
-    State state;
+    Leg legs[MAX_LEGS] = { Leg(legConfigA), Leg(legConfigB), Leg(legConfigC), Leg(legConfigD) };
+    Gyro gyro;
+    State state = NoState;
 
     void setState(State newState);
 
-    void expandLeg(Leg *leg);
+    void expandLeg(Leg leg);
 
     void stateNoStateLoop();
     void stateNoStateCmdToZero();

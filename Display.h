@@ -3,11 +3,11 @@
 
 class Display {
   public:
-    void print(const char *message);
-    void print(float number);
-    void println(const char *message);
-    void newline();
-    void setup();
+    static void print(const char *message);
+    static void print(float number);
+    static void println(const char *message);
+    static void newline();
+    static void setup();
   private:
 };
 

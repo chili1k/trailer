@@ -1,14 +1,12 @@
 #include "Motor.h"
 #include "Arduino.h"
 
-Motor::Motor(int forwardPin, int reversePin) {
+void Motor::setup(int forwardPin, int reversePin) {
   this->forwardPin = forwardPin;
   this->reversePin = reversePin;
   this->currentDirection = Stopped;
   this->setupDone = false;
-}
 
-void Motor::setup() {
   if (setupDone) {
     return;
   }

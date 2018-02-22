@@ -7,29 +7,27 @@
 #include "Debug.h"
 #include "Config.h"
 
-Leg::Leg(LegConfig *legConfig) {
-  this->legConfig = legConfig; 
+Leg::Leg(LegConfig legConfig) {
+  this->legConfig = legConfig;
 }
 
 void Leg::setup() {
-  Motor m = Motor(legConfig->pinMotorForward, legConfig->pinMotorReverse);
-  this->motor = &m;
-  motor->setup();
+  motor.setup(legConfig.pinMotorForward, legConfig.pinMotorReverse);
 
-  pinMode(legConfig->pinZeroPos, INPUT);
-  pinMode(legConfig->pinFinalPos, INPUT);
+  pinMode(legConfig.pinZeroPos, INPUT);
+  pinMode(legConfig.pinFinalPos, INPUT);
 
   // TODO
-  pinMode(legConfig->pinPowerMeter, INPUT);
+  pinMode(legConfig.pinPowerMeter, INPUT);
 }
 
 const char *Leg::getName() {
-  return legConfig->name;
+  return legConfig.name;
 }
 
 void Leg::loop() {
-  if (motor->isRunning()) {
-    int powerReading = analogRead(legConfig->pinPowerMeter);
+  if (motor.isRunning()) {
+    int powerReading = analogRead(legConfig.pinPowerMeter);
     smoother.putReading(powerReading);
     _isOnGround = isHighAmperage();
   }
@@ -46,11 +44,11 @@ void Leg::expand() {
     return;
   }
 
-  motor->start(Forward);
+  motor.start(Forward);
 }
 
 void Leg::stop() {
-  motor->stop();
+  motor.stop();
 }
 
 void Leg::collapse() {
@@ -59,23 +57,23 @@ void Leg::collapse() {
     return;
   }
 
-  motor->start(Reverse);
+  motor.start(Reverse);
 }
 
 LegPosition Leg::getPosition() {
-  if (digitalRead(legConfig->pinZeroPos) == HIGH) {
+  if (digitalRead(legConfig.pinZeroPos) == HIGH) {
     return Zero;
   }
 
-  if (digitalRead(legConfig->pinFinalPos) == HIGH) {
+  if (digitalRead(legConfig.pinFinalPos) == HIGH) {
     return Final;
   }
 
-  if (motor->getDirection() == Forward) {
+  if (motor.getDirection() == Forward) {
     return Expanding;
   }
 
-  if (motor->getDirection() == Reverse) {
+  if (motor.getDirection() == Reverse) {
     return Collapsing;
   }
 
@@ -87,7 +85,7 @@ bool Leg::isOnGround() {
 }
 
 bool Leg::isMotorRunning() {
-  return !motor->isStopped();
+  return !motor.isStopped();
 }
 
 bool Leg::isMotorStopped() {

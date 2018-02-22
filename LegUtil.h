@@ -5,9 +5,9 @@
 
 class LegUtil {
   public:
-    static void stopAllMotors(Leg **leg);
-    static bool allLegsOnGround(Leg **legs);
-    static bool allLegsInPosition(Leg **legs, LegPosition position);
+    static void stopAllMotors(Leg legs[]);
+    static bool allLegsOnGround(Leg legs[]);
+    static bool allLegsInPosition(Leg legs[], LegPosition position);
 };
 
 #endif

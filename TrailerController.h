@@ -6,20 +6,18 @@
 #include "Display.h"
 
 // Refresh display interval
-#define DISPLAY_REFRESH_MS 1000
+#define DISPLAY_REFRESH_MS 3000
 
 /**
  Controls trailer based on user input.
  */
 class TrailerController {
   public:
-    TrailerController();
     void setup();
     void loop();
 
   private:
-    Balancer *balancer;
-    Display display;
+    Balancer balancer;
     void handleInput();
     void refreshDisplay();
     void printHeader();
@@ -31,7 +29,7 @@ class TrailerController {
     void printCommands();
     void printTitle();
 
-    unsigned long lastRefreshTime;
+    unsigned long lastRefreshTime = 0;
 };
 
 #endif

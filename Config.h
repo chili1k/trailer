@@ -7,33 +7,41 @@
 #define LEG_ON_GROUND_AMPS 10.0
 
 // Leg pin configuration
-#define LEG_A_NAME "LegA"
-#define LEG_A_PIN_MOTOR_FORWARD 22
-#define LEG_A_PIN_MOTOR_REVERSE 23
-#define LEG_A_PIN_MOTOR_ZEROPOS 24
-#define LEG_A_PIN_MOTOR_FINALPOS 25
-#define LEG_A_PIN_MOTOR_POWERMETER 0
+const LegConfig legConfigA = {
+  "LEG_A", // name
+  22, // pinMotorForward
+  23, // pinMotorReverse
+  24, // pinZeroPos
+  25, // pinFinalPos
+  0 // pinPowerMeter
+};
 
-#define LEG_B_NAME "LegB"
-#define LEG_B_PIN_MOTOR_FORWARD 26
-#define LEG_B_PIN_MOTOR_REVERSE 27
-#define LEG_B_PIN_MOTOR_ZEROPOS 28
-#define LEG_B_PIN_MOTOR_FINALPOS 29
-#define LEG_B_PIN_MOTOR_POWERMETER 1
+const LegConfig legConfigB = {
+  "LEG_B", // name
+  26, // pinMotorForward
+  27, // pinMotorReverse
+  28, // pinZeroPos
+  29, // pinFinalPos
+  1 // pinPowerMeter
+};
 
-#define LEG_C_NAME "LegC"
-#define LEG_C_PIN_MOTOR_FORWARD 30
-#define LEG_C_PIN_MOTOR_REVERSE 31
-#define LEG_C_PIN_MOTOR_ZEROPOS 32
-#define LEG_C_PIN_MOTOR_FINALPOS 33
-#define LEG_C_PIN_MOTOR_POWERMETER 2
+const LegConfig legConfigC = {
+  "LEG_C", // name
+  30, // pinMotorForward
+  31, // pinMotorReverse
+  32, // pinZeroPos
+  33, // pinFinalPos
+  2 // pinPowerMeter
+};
 
-#define LEG_D_NAME "LegD"
-#define LEG_D_PIN_MOTOR_FORWARD 34
-#define LEG_D_PIN_MOTOR_REVERSE 35
-#define LEG_D_PIN_MOTOR_ZEROPOS 36
-#define LEG_D_PIN_MOTOR_FINALPOS 37
-#define LEG_D_PIN_MOTOR_POWERMETER 3
+const LegConfig legConfigD = {
+  "LEG_D", // name
+  34, // pinMotorForward
+  35, // pinMotorReverse
+  36, // pinZeroPos
+  37, // pinFinalPos
+  3 // pinPowerMeter
+};
 
 // How long to wait after a leg motor is shut down in milliseconds.
 #define STOP_MOTORS_DLY 100

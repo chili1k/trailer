@@ -1,15 +1,15 @@
 #include "Leg.h"
 #include "LegUtil.h"
 
-void LegUtil::stopAllMotors(Leg **legs) {
+void LegUtil::stopAllMotors(Leg legs[]) {
   for (int i = 0; i < MAX_LEGS; i++) {
-    legs[i]->stop();
+    legs[i].stop();
   }
 }
 
-bool LegUtil::allLegsOnGround(Leg **legs) {
+bool LegUtil::allLegsOnGround(Leg legs[]) {
   for (int i = 0; i < MAX_LEGS; i++) {
-    if (!legs[i]->isOnGround()) {
+    if (!legs[i].isOnGround()) {
       return false;
     }
   }
@@ -17,9 +17,9 @@ bool LegUtil::allLegsOnGround(Leg **legs) {
   return true;
 }
 
-bool LegUtil::allLegsInPosition(Leg **legs, LegPosition position) {
+bool LegUtil::allLegsInPosition(Leg legs[], LegPosition position) {
   for (int i = 0; i < MAX_LEGS; i++) {
-    if (legs[i]->getPosition() != position) {
+    if (legs[i].getPosition() != position) {
       return false;
     }
   }

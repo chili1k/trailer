@@ -1,24 +1,15 @@
 #include "Balancer.h"
 #include "Gyro.h"
 #include "Leg.h"
+#include "Display.h"
 #include "LegUtil.h"
 #include "Debug.h"
+#include "Config.h"
 
-#include "Arduino.h"
-
-
-Balancer::Balancer(Leg **legs, Gyro *gyro) {
-  this->legs = legs;
-  this->gyro = gyro;
-  this->state = NoState;
-}
+#include <Arduino.h>
 
 void Balancer::setup() {
-  for (int i = 0; i < MAX_LEGS; i++) {
-    legs[i]->setup();
-  }
-
-  gyro->setup();
+  gyro.setup();
 }
 
 void Balancer::loop() {
@@ -107,8 +98,7 @@ void Balancer::balance() {
 
 void Balancer::stopAllLegs() {
   for (int i = 0; i < MAX_LEGS; i++) {
-    Leg *leg = legs[i];
-    leg->stop();
+    legs[i].stop();
   }
 
   setState(ErrorState);
@@ -118,12 +108,12 @@ void Balancer::setState(State newState) {
   state = newState;
 }
 
-Leg **Balancer::getLegs() {
+Leg *Balancer::getLegs() {
   return legs;
 }
 
 Gyro *Balancer::getGyro() {
-  return gyro;
+  return &gyro;
 }
 
 State Balancer::getState() {
@@ -164,7 +154,7 @@ void Balancer::stateToZeroLoop() {
   int c = 0;
 
   for (int i = 0; i < MAX_LEGS; i++) {
-    Leg *leg = legs[i];
+    Leg *leg = &legs[i];
 
     if (leg->getPosition() == Zero) {
       c++;
@@ -191,7 +181,7 @@ void Balancer::stateToZeroCmdBalance() {
 
 void Balancer::stateBalancingLoop() {
   // Trailer can only be balanced if all legs are on ground
-  if (gyro->isBalanced() && LegUtil::allLegsOnGround(legs)) {
+  if (gyro.isBalanced() && LegUtil::allLegsOnGround(legs)) {
     DPRINTLN("Trailed BALANCED!");
     LegUtil::stopAllMotors(legs);
     setState(BalancedState);
@@ -207,25 +197,25 @@ void Balancer::stateBalancingLoop() {
   }
 
   // Could also be A and C at the same time
-  if (gyro->getPitchPosition() == UnderBalanced && gyro->getRollPosition() == UnderBalanced) {
+  if (gyro.getPitchPosition() == UnderBalanced && gyro.getRollPosition() == UnderBalanced) {
     expandLeg(legs[LEG_A]);
-  } else if (gyro->getPitchPosition() == UnderBalanced && gyro->getRollPosition() == OverBalanced) {
+  } else if (gyro.getPitchPosition() == UnderBalanced && gyro.getRollPosition() == OverBalanced) {
     expandLeg(legs[LEG_B]);
   // Could also be B and D at the same time
-  } else if (gyro->getPitchPosition() == OverBalanced && gyro->getRollPosition() == OverBalanced) {
+  } else if (gyro.getPitchPosition() == OverBalanced && gyro.getRollPosition() == OverBalanced) {
     expandLeg(legs[LEG_C]);
-  } else if (gyro->getPitchPosition() == OverBalanced && gyro->getRollPosition() == UnderBalanced) {
+  } else if (gyro.getPitchPosition() == OverBalanced && gyro.getRollPosition() == UnderBalanced) {
     expandLeg(legs[LEG_D]);
   }
 }
 
-void Balancer::expandLeg(Leg *leg) {
+void Balancer::expandLeg(Leg leg) {
   // Start only if not already started. Stop any other motors.
-  if (leg->isMotorStopped()) {
+  if (leg.isMotorStopped()) {
     LegUtil::stopAllMotors(legs);
     // We don't want to be restarting too fast
     delay(STOP_MOTORS_DLY);
-    leg->expand();
+    leg.expand();
     // Expand leg at least one second before trying to expand another leg
     delay(EXPAND_LEG_DLY);
   }

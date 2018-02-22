@@ -23,9 +23,9 @@ struct LegConfig {
 
 class Leg {
   public:
-    Leg(LegConfig *legConfig);
-    void loop();
+    Leg(LegConfig legConfig);
     void setup();
+    void loop();
     const char *getName();
 
     // Actions
@@ -43,9 +43,9 @@ class Leg {
     float getAmpers();
     
   private:
-    Motor *motor;
+    Motor motor;
     bool _isOnGround;
-    LegConfig *legConfig;
+    LegConfig legConfig;
     Smooth smoother;
 };
 

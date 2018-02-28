@@ -57,6 +57,8 @@ class Balancer {
     */
     void balance();
     void stopAllLegs();
+    void forceExpandLeg(int legId);
+    void forceCollapseLeg(int legId);
     // END Commands
 
     Leg *getLegs();

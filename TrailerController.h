@@ -4,9 +4,6 @@
 #include "Leg.h"
 #include "Balancer.h"
 
-// Refresh display interval
-#define DISPLAY_REFRESH_MS 3000
-
 /**
  Controls trailer based on user input.
  */
@@ -18,6 +15,7 @@ class TrailerController {
   private:
     Balancer balancer;
     void handleInput();
+    void startSingleMotor();
     void refreshDisplay();
     void printHeader();
     void printTrailerState();

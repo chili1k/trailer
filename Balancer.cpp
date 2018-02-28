@@ -31,7 +31,6 @@ void Balancer::loop() {
     case State::BalancingState:
       stateBalancingLoop();
       break;
-    /*
     case State::BalancedState:
       stateBalancedLoop();
       break;
@@ -41,7 +40,6 @@ void Balancer::loop() {
     case State::ErrorState:
       stateErrorLoop();
       break;
-      */
     default:
       DPRINTLN(F("Unknown state."));
   }
@@ -103,12 +101,26 @@ void Balancer::balance() {
   }
 }
 
+void Balancer::forceExpandLeg(int legId) {
+  // Same for all states.
+  stopAllLegs();
+  legs[legId].expand();
+  setState(State::NoState);
+}
+
+void Balancer::forceCollapseLeg(int legId) {
+  // Same for all states.
+  stopAllLegs();
+  legs[legId].collapse();
+  setState(State::NoState);
+}
+
 void Balancer::stopAllLegs() {
   for (int i = 0; i < MAX_LEGS; i++) {
     legs[i].stop();
   }
 
-  setState(State::ErrorState);
+  setState(State::NoState);
 }
 
 void Balancer::setState(State newState) {

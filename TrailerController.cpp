@@ -36,10 +36,51 @@ void TrailerController::handleInput() {
       case '2':
         Serial.println(F("Returning trailer to ZERO position"));
         balancer.toZero();
+      case '3':
+        startSingleMotor();
       default:
         Serial.println(F("Unknown command"));
     }
   }
+}
+
+void TrailerController::startSingleMotor() {
+  // Same for all states.
+  Serial.print(F("Choose motor [0-3]: "));
+  while (!Serial.available()) { }
+  int motorId = Serial.read()-'0';
+  Serial.println(motorId);
+  if (motorId < 0 || motorId >= MAX_LEGS) {
+    Serial.println(F("WARNING: motor must be between 0 and 3."));
+    return;
+  }
+
+
+  Serial.print(F("Choose direction [0-Expand 1-Collapse]: "));
+  while (!Serial.available()) { }
+  int direction = Serial.read()-'0';
+  Serial.println(direction);
+  if (direction != 0 && direction != 1) {
+    Serial.println(F("WARNING: direction must be 0 or 1."));
+    return;
+  }
+
+  Serial.print(F("Running motor '"));
+  Serial.print(motorId);
+
+  if (direction == 0) {
+    Serial.println(F("' in Expand direction..."));
+    balancer.forceExpandLeg(motorId);
+  } else {
+    Serial.println(F("' in Collapse direction..."));
+    balancer.forceCollapseLeg(motorId);
+  }
+
+  Serial.println();
+  Serial.println(F("Press any key to stop"));
+  while (!Serial.available()) { }
+  Serial.read();
+  balancer.stopAllLegs();
 }
 
 void TrailerController::refreshDisplay() {
@@ -65,6 +106,7 @@ void TrailerController::refreshDisplay() {
   printTrailerState();
   Serial.println(F("--------------------------------------"));
   printCommands();
+  Serial.println();
 }
 
 void TrailerController::printHeader() {

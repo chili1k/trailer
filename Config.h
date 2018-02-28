@@ -3,19 +3,22 @@
 
 #include "Leg.h"
 
+// Refresh display interval
+#define DISPLAY_REFRESH_MS 3000
+
 // How many amps are flowing when leg is on ground.
 #define LEG_ON_GROUND_AMPS 10.0
 
 // Relay state controlls motor direction.
 #define MOTOR_FORWARD_STATE true
 
-// Leg pin configuration
+// Leg pin configuration UNO
 const LegConfig legConfigA = {
   "LEG_A", // name
-  8, // pinMotorDirection
-  3, // pinMotorPower
-  4, // pinZeroPos
-  5, // pinFinalPos
+  4, // pinMotorDirection
+  5, // pinMotorPower
+  8, // pinZeroPos
+  9, // pinFinalPos
   14 // pinPowerMeter
 };
 
@@ -39,8 +42,8 @@ const LegConfig legConfigC = {
 
 const LegConfig legConfigD = {
   "LEG_D", // name
-  4, // pinMotorDirection
-  5, // pinMotorPower
+  8, // pinMotorDirection
+  9, // pinMotorPower
   6, // pinZeroPos
   7, // pinFinalPos
   17 // pinPowerMeter

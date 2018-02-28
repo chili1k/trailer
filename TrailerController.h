@@ -3,7 +3,6 @@
 
 #include "Leg.h"
 #include "Balancer.h"
-#include "Display.h"
 
 // Refresh display interval
 #define DISPLAY_REFRESH_MS 3000

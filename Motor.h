@@ -5,7 +5,7 @@ enum Direction { Forward, Reverse, Stopped };
 
 class Motor {
   public:
-    void setup(int forwardPin, int reversePin);
+    void setup(int directionPin, int powerPin);
 
     void start(Direction newDirection);
     void stop();
@@ -13,10 +13,9 @@ class Motor {
     bool isRunning();
     Direction getDirection();
   private:
-    int forwardPin;
-    int reversePin;
-    bool setupDone;
-    Direction currentDirection;
+    int directionPin;
+    int powerPin;
+    Direction currentDirection = Stopped;
 };
 
 #endif

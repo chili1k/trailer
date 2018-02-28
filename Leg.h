@@ -10,12 +10,12 @@
 #define LEG_C 2
 #define LEG_D 3
 
-enum LegPosition { Unknown, Expanding, Collapsing, Zero, Final };
+enum class LegPosition { Unknown, Expanding, Collapsing, Zero, Final };
 
 struct LegConfig {
   const char *name;
-  int pinMotorForward;
-  int pinMotorReverse;
+  int pinMotorDirection;
+  int pinMotorPower;
   int pinZeroPos;
   int pinFinalPos;
   int pinPowerMeter;

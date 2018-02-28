@@ -1,19 +1,13 @@
 #include "Motor.h"
 #include "Arduino.h"
+#include "Config.h"
 
-void Motor::setup(int forwardPin, int reversePin) {
-  this->forwardPin = forwardPin;
-  this->reversePin = reversePin;
-  this->currentDirection = Stopped;
-  this->setupDone = false;
+void Motor::setup(int directionPin, int powerPin) {
+  this->directionPin = directionPin;
+  this->powerPin = powerPin;
 
-  if (setupDone) {
-    return;
-  }
-
-  pinMode(forwardPin, OUTPUT);
-  pinMode(reversePin, OUTPUT);
-  setupDone = true;
+  pinMode(directionPin, OUTPUT);
+  pinMode(powerPin, OUTPUT);
 }
 
 void Motor::start(Direction newDirection) {
@@ -21,15 +15,14 @@ void Motor::start(Direction newDirection) {
     return;
   }
 
-  // Make sure motor is stopped before changing direction
-  digitalWrite(forwardPin, false);
-  digitalWrite(reversePin, false);
-  
   if (newDirection == Forward) {
-    digitalWrite(forwardPin, true);
+    digitalWrite(directionPin, MOTOR_FORWARD_STATE);
   } else if (newDirection == Reverse) {
-    digitalWrite(reversePin, true);
+    digitalWrite(directionPin, !MOTOR_FORWARD_STATE);
   }
+
+  bool shouldStart = newDirection != Stopped;
+  digitalWrite(powerPin, shouldStart);
 
   currentDirection = newDirection;
 }

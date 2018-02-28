@@ -1,7 +1,6 @@
 #include <Arduino.h>
 
 #include "TrailerController.h"
-#include "Display.h"
 #include "Leg.h"
 #include "Gyro.h"
 #include "Balancer.h"
@@ -10,12 +9,9 @@
 #include "Debug.h"
 
 void TrailerController::setup() {
-  // Display needs to be set up first, otherwise DPRINTLN won't work!
-  Display::setup();
+  Serial.begin(115200);
   balancer.setup();
-
   printTitle();
-  handleInput();
 }
 
 void TrailerController::loop() {
@@ -32,16 +28,16 @@ void TrailerController::handleInput() {
 
     switch (b) {
       case '0':
-        Display::println("Stopping all motors");
+        Serial.println(F("Stopping all motors"));
         balancer.stopAllLegs();
       case '1':
-        Display::println("Starting BALANCE operation");
+        Serial.println(F("Starting BALANCE operation"));
         balancer.balance();
       case '2':
-        Display::println("Returning trailer to ZERO position");
+        Serial.println(F("Returning trailer to ZERO position"));
         balancer.toZero();
       default:
-        Display::println("Unkwnon command");
+        Serial.println(F("Unknown command"));
     }
   }
 }
@@ -49,7 +45,7 @@ void TrailerController::handleInput() {
 void TrailerController::refreshDisplay() {
   unsigned long now = millis();
 
-  // Do not refresh Display::too often
+  // Do not refresh display often
   if ((now - lastRefreshTime) < DISPLAY_REFRESH_MS) {
     return;
   }
@@ -63,116 +59,118 @@ void TrailerController::refreshDisplay() {
     printLeg(&legs[i]);  
   }
 
-  Display::newline();
+  Serial.println();
   printGyro();
-  Display::newline();
+  Serial.println();
   printTrailerState();
-  Display::println("--------------------------------------");
+  Serial.println(F("--------------------------------------"));
   printCommands();
 }
 
 void TrailerController::printHeader() {
-  Display::println("Motor\tState\tCurrent");
+  Serial.println(F("Motor\tState\tCurrent"));
 }
 
 void TrailerController::printTrailerState() {
   State state = balancer.getState();
 
-  Display::print("Trailer state: ");
+  Serial.print(F("Trailer state: "));
 
   switch (state) {
-    case NoState:
-      Display::println("No State");
+    case State::NoState:
+      Serial.println(F("No State"));
       break;
-    case ZeroState:
-      Display::println("At Zero Position");
+    case State::ZeroState:
+      Serial.println(F("At Zero Position"));
       break;
-    case ToZeroState:
-      Display::println("Moving to Zero Position ...");
+    case State::ToZeroState:
+      Serial.println(F("Moving to Zero Position ..."));
       break;
-    case BalancedState:
-      Display::println("Balanced");
+    case State::BalancedState:
+      Serial.println(F("Balanced"));
       break;
-    case BalancingState:
-      Display::println("Balancing ...");
+    case State::BalancingState:
+      Serial.println(F("Balancing ..."));
       break;
-    case FinalState:
-      Display::println("At final position");
+    case State::FinalState:
+      Serial.println(F("At final position"));
       break;
-    case ErrorState:
+    case State::ErrorState:
+      Serial.println(F("Position error."));
+      break;
     default:
-      Display::println("Unknown trailer state!");
+      Serial.println(F("Unknown trailer state!"));
   }
 }
 
 void TrailerController::printLeg(Leg *leg) {
-  Display::print(leg->getName());
-  Display::print("\t");
+  Serial.print(leg->getName());
+  Serial.print(F("\t"));
   printLegPosition(leg);
-  Display::print("\t");
+  Serial.print(F("\t"));
   printAmpers(leg);
-  Display::newline();
+  Serial.println();
 }
 
 void TrailerController::printGyro() {
   Gyro *gyro = balancer.getGyro();
 
   float *ypr = gyro->getYPR();
-  Display::print("Gyro pitch, roll: [");
-  Display::print(ypr[0]);
-  Display::print(", ");
-  Display::print(ypr[1]);
-  Display::print(", ");
-  Display::print(ypr[2]);
-  Display::print(" ]");
+  Serial.print(F("Gyro pitch, roll: ["));
+  Serial.print(ypr[0]);
+  Serial.print(F(", "));
+  Serial.print(ypr[1]);
+  Serial.print(F(", "));
+  Serial.print(ypr[2]);
+  Serial.print(F(" ]"));
 
 }
 
 void TrailerController::printAmpers(Leg *leg) {
   float ampers = leg->getAmpers();
-  Display::print(ampers);
-  Display::print(" A");
+  Serial.print(ampers);
+  Serial.print(F(" A"));
 }
 
 void TrailerController::printLegPosition(Leg *leg) {
   const char *state;
   switch (leg->getPosition()) {
-    case (Unknown):
+    case (LegPosition::Unknown):
       state = "Unknown";
       break;
-    case (Expanding):
+    case (LegPosition::Expanding):
       state = "Expanding";
       break;
-    case (Collapsing):
+    case (LegPosition::Collapsing):
       state = "Collapsing";
       break;
-    case (Zero):
+    case (LegPosition::Zero):
       state = "Zero";
       break;
-    case (Final):
+    case (LegPosition::Final):
       state = "Final";
       break;
     default:
       state = "ERROR STATE";
   }
 
-  Display::print(state);
+  Serial.print(state);
 }
 
 void TrailerController::printCommands() {
-  Display::println("0: Stop all motors");
-  Display::println("1: Balance trailer");
-  Display::println("2: Return to zero");
-  Display::println("3: Start single motor");
+  Serial.println(F("0: Stop all motors"));
+  Serial.println(F("1: Balance trailer"));
+  Serial.println(F("2: Return to zero"));
+  Serial.println(F("3: Start single motor"));
 }
 
 void TrailerController::printTitle() {
-  Display::println("*************************************");
-  Display::print  ("** Trailer balancer ");
-  Display::print(VER);
-  Display::print(" ");
-  Display::println(RELEASE_DATE);
-  Display::println("Copyright bezensek.mitja@gmail.com");
-  Display::println("*************************************");
-  Display::newline();
+  Serial.println(F("*************************************"));
+  Serial.print(F("Trailer balancer "));
+  Serial.print(F(VER));
+  Serial.print(F(" "));
+  Serial.println(F(RELEASE_DATE));
+  Serial.println(F("Copyright bezensek.mitja@gmail.com"));
+  Serial.println(F("*************************************"));
+  Serial.println();
 }

@@ -12,7 +12,7 @@ Leg::Leg(LegConfig legConfig) {
 }
 
 void Leg::setup() {
-  motor.setup(legConfig.pinMotorForward, legConfig.pinMotorReverse);
+  motor.setup(legConfig.pinMotorDirection, legConfig.pinMotorPower);
 
   pinMode(legConfig.pinZeroPos, INPUT);
   pinMode(legConfig.pinFinalPos, INPUT);
@@ -33,14 +33,14 @@ void Leg::loop() {
   }
 
   // Safety - do not allow leg over final position
-  if (getPosition() == Final) {
+  if (getPosition() == LegPosition::Final) {
     stop();
   }
 }
 
 void Leg::expand() {
-  if (getPosition() == Final) {
-    DPRINTLN("Cannot expand leg beyond final position.");
+  if (getPosition() == LegPosition::Final) {
+    DPRINTLN(F("Cannot expand leg beyond final position."));
     return;
   }
 
@@ -52,8 +52,8 @@ void Leg::stop() {
 }
 
 void Leg::collapse() {
-  if (getPosition() == Zero) {
-    DPRINTLN("Cannot collapse leg beyond zero position.");
+  if (getPosition() == LegPosition::Zero) {
+    DPRINTLN(F("Cannot collapse leg beyond zero position."));
     return;
   }
 
@@ -62,22 +62,22 @@ void Leg::collapse() {
 
 LegPosition Leg::getPosition() {
   if (digitalRead(legConfig.pinZeroPos) == HIGH) {
-    return Zero;
+    return LegPosition::Zero;
   }
 
   if (digitalRead(legConfig.pinFinalPos) == HIGH) {
-    return Final;
+    return LegPosition::Final;
   }
 
   if (motor.getDirection() == Forward) {
-    return Expanding;
+    return LegPosition::Expanding;
   }
 
   if (motor.getDirection() == Reverse) {
-    return Collapsing;
+    return LegPosition::Collapsing;
   }
 
-  return Unknown;
+  return LegPosition::Unknown;
 }
 
 bool Leg::isOnGround() {

@@ -3,8 +3,8 @@
   Created by Mitja Bezensek, Jun 20, 2017
 */
 
-#ifndef Gyro_h
-#define Gyro_h
+#ifndef GYRO_H
+#define GYRO_H
 
 enum Position { UnderBalanced, Balanced, OverBalanced };
 
@@ -15,15 +15,14 @@ class Gyro {
     Position getRollPosition();
     bool isBalanced();
     void loop();
-    bool setup();
+    void setup();
     float *getYPR();
 
   private:
+    float ypr[3] = {-1.0, -1.0, -1.0};
     float pitch;
     float roll;
     void printPitchRoll();
-    // yaw, pitch, roll
-    float ypr[3];
 
 };
 

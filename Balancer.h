@@ -4,9 +4,8 @@
 #include "Leg.h"
 #include "Gyro.h"
 #include "Config.h"
-#include "Display.h"
 
-enum State { NoState, ZeroState, ToZeroState, BalancedState, BalancingState, FinalState, ErrorState };
+enum class State { NoState, ZeroState, ToZeroState, BalancedState, BalancingState, FinalState, ErrorState };
 
 
 /*
@@ -67,11 +66,11 @@ class Balancer {
   private:
     Leg legs[MAX_LEGS] = { Leg(legConfigA), Leg(legConfigB), Leg(legConfigC), Leg(legConfigD) };
     Gyro gyro;
-    State state = NoState;
+    State state = State::NoState;
 
     void setState(State newState);
 
-    void expandLeg(Leg leg);
+    void expandLeg(Leg &leg);
 
     void stateNoStateLoop();
     void stateNoStateCmdToZero();

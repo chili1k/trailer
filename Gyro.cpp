@@ -15,7 +15,6 @@
 #define MIN_STABLE_ANGLE 0.10
 
 MPU6050 mpu;
-
 bool dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
@@ -36,17 +35,14 @@ Gyro::Gyro() {
 }
 
 void dmpDataReady() {
-    mpuInterrupt = true;
+  mpuInterrupt = true;
 }
 
-bool Gyro::setup() {
+void Gyro::setup() {
   Wire.begin();
   Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
-  Serial.begin(115200);
-  while (!Serial); // wait for Leonardo enumeration, others continue immediately
-
-  Serial.println(F("aInitializing I2C devices..."));
+  Serial.println(F("Initializing I2C devices..."));
   mpu.initialize();
   pinMode(INTERRUPT_PIN, INPUT);
 
@@ -96,39 +92,49 @@ bool Gyro::setup() {
 
 void Gyro::loop() {
   // if programming failed, don't try to do anything
-  if (!dmpReady) return;
-    // wait for MPU interrupt or extra packet(s) available
-    while (!mpuInterrupt && fifoCount < packetSize) { }
+//  if (dmpReady) {
+//    Serial.println("dmpready TRUE");
+//  } else {
+//    Serial.println("dmpready FALSE");
+//  }
+  if (!dmpReady || !mpuInterrupt) return;
+  
+//  Serial.println("dmpready Over");
 
-    // reset interrupt flag and get INT_STATUS byte
-    mpuInterrupt = false;
-    mpuIntStatus = mpu.getIntStatus();
+  // wait for MPU interrupt or extra packet(s) available
+  //Serial.println("loop start");
+  while (!mpuInterrupt && fifoCount < packetSize) { }
+  //Serial.println("loop end");
 
-    // get current FIFO count
-    fifoCount = mpu.getFIFOCount();
+  // reset interrupt flag and get INT_STATUS byte
+  mpuInterrupt = false;
+  mpuIntStatus = mpu.getIntStatus();
 
-    // check for overflow (this should never happen unless our code is too inefficient)
-    if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-      // reset so we can continue cleanly
-      mpu.resetFIFO();
-      Serial.println(F("FIFO overflow!"));
-      // otherwise, check for DMP data ready interrupt (this should happen frequently)
-    } else if (mpuIntStatus & 0x02) {
-      // wait for correct available data length, should be a VERY short wait
-      while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+  // get current FIFO count
+  fifoCount = mpu.getFIFOCount();
+
+  // check for overflow (this should never happen unless our code is too inefficient)
+  if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+    // reset so we can continue cleanly
+    mpu.resetFIFO();
+    Serial.println(F("FIFO overflow!"));
+    // otherwise, check for DMP data ready interrupt (this should happen frequently)
+  } else if (mpuIntStatus & 0x02) {
+    // wait for correct available data length, should be a VERY short wait
+    while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+  
+    // read a packet from FIFO
+    mpu.getFIFOBytes(fifoBuffer, packetSize);
     
-      // read a packet from FIFO
-      mpu.getFIFOBytes(fifoBuffer, packetSize);
-      
-      mpu.dmpGetQuaternion(&q, fifoBuffer);
-      mpu.dmpGetGravity(&gravity, &q);
-      mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+    mpu.dmpGetQuaternion(&q, fifoBuffer);
+    mpu.dmpGetGravity(&gravity, &q);
+    mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-      // Round to 2 decimals
-      pitch = round(ypr[1]*100.0)/100.0;
-      roll = round(ypr[2]*100.0)/100.0;
-      printPitchRoll();
-    }
+    // Round to 2 decimals
+    pitch = round(ypr[1]*100.0)/100.0;
+    roll = round(ypr[2]*100.0)/100.0;
+    //printPitchRoll();
+  }
 }
 
 float *Gyro::getYPR() {

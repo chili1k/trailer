@@ -1,6 +1,7 @@
 #include "Motor.h"
 #include "Arduino.h"
 #include "Config.h"
+#include "Debug.h"
 
 void Motor::setup(int directionPin, int powerPin) {
   this->directionPin = directionPin;
@@ -8,6 +9,8 @@ void Motor::setup(int directionPin, int powerPin) {
 
   pinMode(directionPin, OUTPUT);
   pinMode(powerPin, OUTPUT);
+  digitalWrite(directionPin, RELAY_OPEN_PIN_MODE);
+  digitalWrite(powerPin, RELAY_OPEN_PIN_MODE);
 }
 
 void Motor::start(Direction newDirection) {
@@ -22,6 +25,9 @@ void Motor::start(Direction newDirection) {
   }
 
   bool shouldStart = newDirection != Stopped;
+  if (RELAY_OPEN_PIN_MODE) {
+    shouldStart = !shouldStart;
+  }
   digitalWrite(powerPin, shouldStart);
 
   currentDirection = newDirection;

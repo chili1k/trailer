@@ -30,14 +30,18 @@ void TrailerController::handleInput() {
       case '0':
         Serial.println(F("Stopping all motors"));
         balancer.stopAllLegs();
+        break;
       case '1':
         Serial.println(F("Starting BALANCE operation"));
         balancer.balance();
+        break;
       case '2':
         Serial.println(F("Returning trailer to ZERO position"));
         balancer.toZero();
+        break;
       case '3':
         startSingleMotor();
+        break;
       default:
         Serial.println(F("Unknown command"));
     }
@@ -46,9 +50,9 @@ void TrailerController::handleInput() {
 
 void TrailerController::startSingleMotor() {
   // Same for all states.
-  Serial.print(F("Choose motor [0-3]: "));
+  Serial.print(F("Choose motor [A-D]: "));
   while (!Serial.available()) { }
-  int motorId = Serial.read()-'0';
+  int motorId = Serial.read()-'a';
   Serial.println(motorId);
   if (motorId < 0 || motorId >= MAX_LEGS) {
     Serial.println(F("WARNING: motor must be between 0 and 3."));
@@ -76,11 +80,12 @@ void TrailerController::startSingleMotor() {
     balancer.forceCollapseLeg(motorId);
   }
 
-  Serial.println();
+/*  Serial.println();
   Serial.println(F("Press any key to stop"));
   while (!Serial.available()) { }
   Serial.read();
   balancer.stopAllLegs();
+  */
 }
 
 void TrailerController::refreshDisplay() {
@@ -110,7 +115,7 @@ void TrailerController::refreshDisplay() {
 }
 
 void TrailerController::printHeader() {
-  Serial.println(F("Motor\tState\tCurrent"));
+  Serial.println(F("Motor\tState\t\tCurrent"));
 }
 
 void TrailerController::printTrailerState() {
@@ -149,7 +154,7 @@ void TrailerController::printLeg(Leg *leg) {
   Serial.print(leg->getName());
   Serial.print(F("\t"));
   printLegPosition(leg);
-  Serial.print(F("\t"));
+  Serial.print(F("\t\t"));
   printAmpers(leg);
   Serial.println();
 }

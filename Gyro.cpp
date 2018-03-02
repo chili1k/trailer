@@ -1,5 +1,6 @@
 #include "Gyro.h"
 #include "Arduino.h"
+#include "Config.h"
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
@@ -10,7 +11,6 @@
 
 #include <math.h>
 
-#define INTERRUPT_PIN 2
 // Minimum angle where the dimension is considered stable
 #define MIN_STABLE_ANGLE 0.10
 
@@ -44,7 +44,7 @@ void Gyro::setup() {
 
   Serial.println(F("Initializing I2C devices..."));
   mpu.initialize();
-  pinMode(INTERRUPT_PIN, INPUT);
+  pinMode(GYRO_INTERRUPT_PIN, INPUT);
 
   if (!mpu.testConnection()) {
     Serial.println(F("MPU6050 connection failed"));
@@ -70,7 +70,7 @@ void Gyro::setup() {
 
     // enable Arduino interrupt detection
     Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
-    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
+    attachInterrupt(digitalPinToInterrupt(GYRO_INTERRUPT_PIN), dmpDataReady, RISING);
     mpuIntStatus = mpu.getIntStatus();
 
     // set our DMP Ready flag so the main loop() function knows it's okay to use it

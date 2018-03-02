@@ -17,6 +17,9 @@ void Balancer::setup() {
 
 void Balancer::loop() {
   gyro.loop();
+  for (int i = 0; i < MAX_LEGS; i++) {
+    legs[i].loop();
+  }
 
   switch (state) {
     case State::NoState:

@@ -26,14 +26,18 @@ const char *Leg::getName() {
 }
 
 void Leg::loop() {
-  if (motor.isRunning()) {
-    int powerReading = analogRead(legConfig.pinPowerMeter);
-    smoother.putReading(powerReading);
-    _isOnGround = isHighAmperage();
+//  if (motor.isRunning()) {
+  int powerReading = analogRead(legConfig.pinPowerMeter);
+  smoother.putReading(powerReading);
+  _isOnGround = isHighAmperage();
+//  }
+
+  // Safety - do not allow leg over final or zero position
+  if (motor.getDirection() == Forward && getPosition() == LegPosition::Final) {
+    stop();
   }
 
-  // Safety - do not allow leg over final position
-  if (getPosition() == LegPosition::Final) {
+  if (motor.getDirection() == Reverse && getPosition() == LegPosition::Zero) {
     stop();
   }
 }
@@ -95,6 +99,7 @@ bool Leg::isMotorStopped() {
 float Leg::getAmpers() {
   //float mV = (raw / 1023.0) * 5000.0;
   //float amps = ((2500.0 - mV) / 66.0);
+
   float rawAverage = smoother.getAverage();
   return 37.87-(0.07405 * rawAverage);
 }

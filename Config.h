@@ -2,6 +2,20 @@
 #define CONFIG_H
 
 #include "Leg.h"
+#include "Arduino.h"
+
+/*
+
+      roll
+       -  A            B 
+pitch  -  +------------+  + pitch
+          |o  vcc      |
+          |            |
+          +------------+
+          C            D
+       +
+      roll
+*/
 
 // Refresh display interval
 #define DISPLAY_REFRESH_MS 3000
@@ -10,8 +24,51 @@
 #define LEG_ON_GROUND_AMPS 10.0
 
 // Relay state controlls motor direction.
-#define MOTOR_FORWARD_STATE true
+#define MOTOR_FORWARD_STATE false
+// Relay "Open mode" = PIN true
+#define RELAY_OPEN_PIN_MODE true
 
+#define GYRO_INTERRUPT_PIN 19
+
+// Zero means top position.
+
+const LegConfig legConfigA = {
+  "LEG_A", // name
+  35, // pinMotorDirection
+  37, // pinMotorPower
+  24, // pinZeroPos
+  22, // pinFinalPos
+  A1 // pinPowerMeter
+};
+
+const LegConfig legConfigB = {
+  "LEG_B", // name
+  27, // pinMotorDirection
+  29, // pinMotorPower
+  28, // pinZeroPos
+  26, // pinFinalPos
+  A2 // pinPowerMeter
+};
+
+const LegConfig legConfigC = {
+  "LEG_C", // name
+  31, // pinMotorDirection
+  33, // pinMotorPower
+  32, // pinZeroPos
+  30, // pinFinalPos
+  A3 // pinPowerMeter
+};
+
+const LegConfig legConfigD = {
+  "LEG_D", // name
+  23, // pinMotorDirection
+  25, // pinMotorPower
+  36, // pinZeroPos
+  34, // pinFinalPos
+  A4 // pinPowerMeter
+};
+
+/*
 // Leg pin configuration UNO
 const LegConfig legConfigA = {
   "LEG_A", // name
@@ -48,43 +105,9 @@ const LegConfig legConfigD = {
   7, // pinFinalPos
   17 // pinPowerMeter
 };
-/*
-const LegConfig legConfigA = {
-  "LEG_A", // name
-  22, // pinMotorDirection
-  23, // pinMotorPower
-  24, // pinZeroPos
-  25, // pinFinalPos
-  0 // pinPowerMeter
-};
 
-const LegConfig legConfigB = {
-  "LEG_B", // name
-  26, // pinMotorDirection
-  27, // pinMotorPower
-  28, // pinZeroPos
-  29, // pinFinalPos
-  1 // pinPowerMeter
-};
-
-const LegConfig legConfigC = {
-  "LEG_C", // name
-  30, // pinMotorDirection
-  31, // pinMotorPower
-  32, // pinZeroPos
-  33, // pinFinalPos
-  2 // pinPowerMeter
-};
-
-const LegConfig legConfigD = {
-  "LEG_D", // name
-  34, // pinMotorDirection
-  35, // pinMotorPower
-  36, // pinZeroPos
-  37, // pinFinalPos
-  3 // pinPowerMeter
-};
 */
+
 // How long to wait after a leg motor is shut down in milliseconds.
 #define STOP_MOTORS_DLY 100
 // Minimum time leg expands in milliseconds.

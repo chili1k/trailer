@@ -45,6 +45,7 @@ Direction Motor::getDirection() {
 }
 
 void Motor::stop() {
-  start(Stopped);
+  //start(Stopped);
+  digitalWrite(powerPin, RELAY_OPEN_PIN_MODE);
 }
 

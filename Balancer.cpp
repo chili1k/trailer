@@ -149,7 +149,7 @@ void Balancer::stateNoStateLoop() {
 }
 
 void Balancer::stateNoStateCmdToZero() {
-  setState(State::ZeroState);
+  setState(State::ToZeroState);
 }
 
 void Balancer::stateNoStateCmdBalance() {
@@ -181,7 +181,8 @@ void Balancer::stateToZeroLoop() {
     if (leg.getPosition() == LegPosition::Zero) {
       c++;
       leg.stop();
-    } else if (leg.getPosition() != LegPosition::Unknown && leg.getPosition() != LegPosition::Zero) {
+//    } else if (leg.getPosition() != LegPosition::Unknown && leg.getPosition() != LegPosition::Zero) {
+    } else if (leg.getPosition() != LegPosition::Zero) {
       leg.collapse();
     }
   }

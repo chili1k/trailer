@@ -100,8 +100,12 @@ float Leg::getAmpers() {
   //float mV = (raw / 1023.0) * 5000.0;
   //float amps = ((2500.0 - mV) / 66.0);
 
-  float rawAverage = smoother.getAverage();
-  return 37.87-(0.07405 * rawAverage);
+//  float rawAverage = smoother.getAverage();
+//  return 37.87-(0.07405 * rawAverage);
+
+  float raw = smoother.getAverage();
+  float mV = (raw / 1023.0) * 5000.0;
+  return ((2500.0 - mV) / 53.0);
 }
 
 bool Leg::isHighAmperage() {

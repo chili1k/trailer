@@ -1,0 +1,6 @@
+Ce das stop all motors zjebe state
+Balancing ne dela
+Naredi move all to final
+Balancing implement delta current
+Debounce za induktivca
+

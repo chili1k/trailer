@@ -12,7 +12,7 @@
 #include <math.h>
 
 // Minimum angle where the dimension is considered stable
-#define MIN_STABLE_ANGLE 0.10
+#define MIN_STABLE_ANGLE 0.0
 
 MPU6050 mpu;
 bool dmpReady = false;  // set true if DMP init was successful
@@ -55,13 +55,24 @@ void Gyro::setup() {
 
   Serial.println(F("Initializing DMP..."));
   devStatus = mpu.dmpInitialize();
+  /*
+-491	726	1609	141	0	-6
+
+Sensor readings with offsets:	8	8	16388	0	-2	0
+Your offsets:	-5471	-1884	1369	-21	-2	36
+
+Data is printed as: acelX acelY acelZ giroX giroY giroZ
+Check that your sensor readings are close to 0 0 16384 0 0 0
+If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)
+
+  */
   
-  mpu.setXAccelOffset(-412);
-  mpu.setYAccelOffset(805);
-  mpu.setZAccelOffset(1688);
-  mpu.setXGyroOffset(220);
-  mpu.setYGyroOffset(76);
-  mpu.setZGyroOffset(-85);
+  mpu.setXAccelOffset(-5471);
+  mpu.setYAccelOffset(-1884);
+  mpu.setZAccelOffset(1369);
+  mpu.setXGyroOffset(-21);
+  mpu.setYGyroOffset(-2);
+  mpu.setZGyroOffset(36);
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {

@@ -5,7 +5,7 @@
 #include "Gyro.h"
 #include "Config.h"
 
-enum class State { NoState, ZeroState, ToZeroState, BalancedState, BalancingState, FinalState, ErrorState };
+enum class State { NoState, ZeroState, ToZeroState, ToGroundState, ToFinalState, BalancedState, BalancingState, GroundState, FinalState, ErrorState };
 
 
 /*
@@ -48,13 +48,9 @@ class Balancer {
     void setup();
     void loop();
     // START Commands
-    /**
-    * Move trailer to zero position
-    */
     void toZero();
-    /**
-    * Balance trailer
-    */
+    void toGround();
+    void toFinal();
     void balance();
     void stopAllLegs();
     void forceExpandLeg(int legId);
@@ -74,33 +70,10 @@ class Balancer {
 
     void expandLeg(Leg &leg);
 
-    void stateNoStateLoop();
-    void stateNoStateCmdToZero();
-    void stateNoStateCmdBalance();
-
-    void stateZeroLoop();
-    void stateZeroCmdToZero();
-    void stateZeroCmdBalance();
-
     void stateToZeroLoop();
-    void stateToZeroCmdToZero();
-    void stateToZeroCmdBalance();
-
+    void stateToGroundLoop();
+    void stateToFinalLoop();
     void stateBalancingLoop();
-    void stateBalancingCmdToZero();
-    void stateBalancingCmdBalance();
-
-    void stateBalancedLoop();
-    void stateBalancedCmdToZero();
-    void stateBalancedCmdBalance();
-
-    void stateFinalLoop();
-    void stateFinalCmdToZero();
-    void stateFinalCmdBalance();
-
-    void stateErrorLoop();
-    void stateErrorCmdToZero();
-    void stateErrorCmdBalance();
 };
 
 #endif

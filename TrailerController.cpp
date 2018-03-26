@@ -9,7 +9,7 @@
 #include "Debug.h"
 
 void TrailerController::setup() {
-  Serial.begin(115200);
+  Serial.begin(SERIAL_BAUD_RATE);
   balancer.setup();
   printTitle();
 }
@@ -20,6 +20,15 @@ void TrailerController::loop() {
   // Main loop
   refreshDisplay();
   handleInput();
+}
+
+void TrailerController::printCommands() {
+  Serial.println(F("0: Stop all motors"));
+  Serial.println(F("1: Balance trailer"));
+  Serial.println(F("2: Return to zero"));
+  Serial.println(F("3: Return to ground"));
+  Serial.println(F("4: Move to final"));
+  Serial.println(F("5: Start single motor"));
 }
 
 void TrailerController::handleInput() {
@@ -36,10 +45,18 @@ void TrailerController::handleInput() {
         balancer.balance();
         break;
       case '2':
-        Serial.println(F("Returning trailer to ZERO position"));
+        Serial.println(F("To ZERO position"));
         balancer.toZero();
         break;
       case '3':
+        Serial.println(F("To GROUND position"));
+        balancer.toGround();
+        break;
+      case '4':
+        Serial.println(F("To FINAL position"));
+        balancer.toFinal();
+        break;
+      case '5':
         startSingleMotor();
         break;
       default:
@@ -202,13 +219,10 @@ void TrailerController::printLegPosition(Leg *leg) {
   }
 
   Serial.print(state);
-}
+  if (leg->isOnGround()) {
+    Serial.print(F(" Ground"));
+  }
 
-void TrailerController::printCommands() {
-  Serial.println(F("0: Stop all motors"));
-  Serial.println(F("1: Balance trailer"));
-  Serial.println(F("2: Return to zero"));
-  Serial.println(F("3: Start single motor"));
 }
 
 void TrailerController::printTitle() {

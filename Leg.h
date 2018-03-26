@@ -4,6 +4,8 @@
 #include "Motor.h"
 #include "Smooth.h"
 
+#include <Bounce2.h>
+
 #define MAX_LEGS 4
 #define LEG_A 0
 #define LEG_B 1
@@ -45,8 +47,13 @@ class Leg {
   private:
     Motor motor;
     bool _isOnGround;
+    bool _isHighAmperage;
     LegConfig legConfig;
     Smooth smoother;
+    Bounce debounceZero;
+    Bounce debounceFinal;
+
+    void loopCheckIfOnGround();
 };
 
 #endif

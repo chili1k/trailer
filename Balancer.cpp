@@ -17,31 +17,30 @@ void Balancer::setup() {
 
 void Balancer::loop() {
   gyro.loop();
+
   for (int i = 0; i < MAX_LEGS; i++) {
     legs[i].loop();
   }
 
   switch (state) {
     case State::NoState:
-      stateNoStateLoop();
-      break;
     case State::ZeroState:
-      stateZeroLoop();      
-      break;
-    case State::ToZeroState:
-      stateToZeroLoop();
+    case State::BalancedState:
+    case State::ErrorState:
+    case State::GroundState:
+    case State::FinalState:
       break;
     case State::BalancingState:
       stateBalancingLoop();
       break;
-    case State::BalancedState:
-      stateBalancedLoop();
+    case State::ToZeroState:
+      stateToZeroLoop();
       break;
-    case State::FinalState:
-      stateFinalLoop();
+    case State::ToGroundState:
+      stateToGroundLoop();
       break;
-    case State::ErrorState:
-      stateErrorLoop();
+    case State::ToFinalState:
+      stateToFinalLoop();
       break;
     default:
       DPRINTLN(F("Unknown state."));
@@ -49,59 +48,19 @@ void Balancer::loop() {
 }
 
 void Balancer::toZero() {
-  switch (state) {
-    case State::NoState:
-      stateNoStateCmdToZero();
-      break;
-    case State::ZeroState:
-      stateZeroCmdToZero();
-      break;
-    case State::ToZeroState:
-      stateToZeroCmdToZero();
-      break;
-    case State::BalancingState:
-      stateBalancingCmdToZero();
-      break;
-    case State::BalancedState:
-      stateBalancedCmdToZero();
-      break;
-    case State::FinalState:
-      stateFinalCmdToZero();
-      break;
-    case State::ErrorState:
-      stateErrorCmdToZero();
-      break;
-    default:
-      DPRINTLN(F("Unknown state."));;
-  }
+  setState(State::ToZeroState);
+}
+
+void Balancer::toGround() {
+  setState(State::ToGroundState);
+}
+
+void Balancer::toFinal() {
+  setState(State::ToFinalState);
 }
 
 void Balancer::balance() {
-  switch (state) {
-    case State::NoState:
-      stateNoStateCmdBalance();
-      break;
-    case State::ZeroState:
-      stateZeroCmdBalance();
-      break;
-    case State::ToZeroState:
-      stateToZeroCmdBalance();
-      break;
-    case State::BalancingState:
-      stateBalancingCmdBalance();
-      break;
-    case State::BalancedState:
-      stateBalancedCmdBalance();
-      break;
-    case State::FinalState:
-      stateFinalCmdBalance();
-      break;
-    case State::ErrorState:
-      stateErrorCmdBalance();
-      break;
-    default:
-      DPRINTLN(F("Unknown state."));;
-  }
+  setState(State::BalancingState);
 }
 
 void Balancer::forceExpandLeg(int legId) {
@@ -119,58 +78,13 @@ void Balancer::forceCollapseLeg(int legId) {
 }
 
 void Balancer::stopAllLegs() {
-  for (int i = 0; i < MAX_LEGS; i++) {
-    legs[i].stop();
-  }
-
+  LegUtil::stopAllMotors(legs);
   setState(State::NoState);
 }
 
 void Balancer::setState(State newState) {
   state = newState;
 }
-
-Leg *Balancer::getLegs() {
-  return legs;
-}
-
-Gyro *Balancer::getGyro() {
-  return &gyro;
-}
-
-State Balancer::getState() {
-  return state;
-}
-
-/////// NoState
-
-void Balancer::stateNoStateLoop() {
-  // Nothing to do
-}
-
-void Balancer::stateNoStateCmdToZero() {
-  setState(State::ToZeroState);
-}
-
-void Balancer::stateNoStateCmdBalance() {
-  setState(State::BalancingState); 
-}
-
-/////// Zero state
-
-void Balancer::stateZeroLoop() {
-  // Nothing to do
-}
-
-void Balancer::stateZeroCmdToZero() {
-  DPRINTLN(F("Already at zero."));
-}
-
-void Balancer::stateZeroCmdBalance() {
-  setState(State::BalancingState); 
-}
-
-/////// ToZero state
 
 void Balancer::stateToZeroLoop() {
   int c = 0;
@@ -192,17 +106,60 @@ void Balancer::stateToZeroLoop() {
   }
 }
 
-void Balancer::stateToZeroCmdToZero() {
-  DPRINTLN(F("Already at zero."));
+void Balancer::stateToGroundLoop() {
+  int c = 0;
+  int isFinalPosition = false;
+
+  for (int i = 0; i < MAX_LEGS; i++) {
+    Leg leg = legs[i];
+
+    if (leg.isOnGround()) {
+      c++;
+      leg.stop();
+    } else if (leg.getPosition() == LegPosition::Final) {
+      DPRINTLN(F("STOP To Ground operation. Leg at final position detected."));
+      isFinalPosition = true;
+      break;
+    } else {
+      leg.expand();
+    }
+  }
+
+  if (c == MAX_LEGS) {
+    setState(State::GroundState);
+  }
+
+  if (isFinalPosition) {
+    stopAllLegs();
+    setState(State::ErrorState);
+  }
 }
 
-void Balancer::stateToZeroCmdBalance() {
-  DPRINTLN(F("Trailer is not at zero state yet."));
-}
+void Balancer::stateToFinalLoop() {
+  int c = 0;
 
-/////// Balancing state
+  for (int i = 0; i < MAX_LEGS; i++) {
+    Leg leg = legs[i];
+
+    if (leg.getPosition() == LegPosition::Final) {
+      c++;
+      leg.stop();
+    } else if (leg.getPosition() != LegPosition::Final) {
+      leg.expand();
+    }
+  }
+
+  if (c == MAX_LEGS) {
+    setState(State::ZeroState);
+  }
+}
 
 void Balancer::stateBalancingLoop() {
+  if (getState() != State::GroundState) {
+    DPRINTLN(F("Trailer needs to be on ground!"));
+    return;
+  }
+
   // Trailer can only be balanced if all legs are on ground
   if (gyro.isBalanced() && LegUtil::allLegsOnGround(legs)) {
     DPRINTLN(F("Trailed BALANCED!"));
@@ -244,55 +201,14 @@ void Balancer::expandLeg(Leg &leg) {
   }
 }
 
-void Balancer::stateBalancingCmdToZero() {
-  LegUtil::stopAllMotors(legs);
-  setState(State::ZeroState);
+Leg *Balancer::getLegs() {
+  return legs;
 }
 
-void Balancer::stateBalancingCmdBalance() {
-  DPRINTLN(F("Already balancing."));
+Gyro *Balancer::getGyro() {
+  return &gyro;
 }
 
-/////// Balanced state
-
-void Balancer::stateBalancedLoop() {
-  // Nothing to do
+State Balancer::getState() {
+  return state;
 }
-
-void Balancer::stateBalancedCmdToZero() {
-  setState(State::ToZeroState);
-}
-
-void Balancer::stateBalancedCmdBalance() {
-  DPRINTLN(F("Already balanced."));
-}
-
-/////// Final state
-
-void Balancer::stateFinalLoop() {
-  // Nothing to do
-}
-
-void Balancer::stateFinalCmdToZero() {
-  setState(State::ToZeroState);
-}
-
-void Balancer::stateFinalCmdBalance() {
-  DPRINTLN(F("Move to zero position first."));
-}
-
-/////// Error state
-
-void Balancer::stateErrorLoop() {
-  // Nothing to do
-}
-
-void Balancer::stateErrorCmdToZero() {
-  setState(State::ToZeroState);
-}
-
-void Balancer::stateErrorCmdBalance() {
-  // Nothing to do
-  DPRINTLN(F("Move to zero position first."));
-}
-

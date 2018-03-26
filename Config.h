@@ -17,20 +17,24 @@ pitch  -  +------------+  + pitch
       roll
 */
 
+#define SERIAL_BAUD_RATE 115200
+
 // Refresh display interval
-#define DISPLAY_REFRESH_MS 3000
+#define DISPLAY_REFRESH_MS 1000
 
 // How many amps are flowing when leg is on ground.
 #define LEG_ON_GROUND_AMPS 10.0
 
 // Relay state controlls motor direction.
 #define MOTOR_FORWARD_STATE false
-// Relay "Open mode" = PIN true
-#define RELAY_OPEN_PIN_MODE true
+#define MOTOR_REVERSE_STATE !MOTOR_FORWARD_STATE
+// Pin configurations for motor ON and OFF.
+#define MOTOR_ON_PIN_MODE false
+#define MOTOR_OFF_PIN_MODE !MOTOR_ON_PIN_MODE
 
 #define GYRO_INTERRUPT_PIN 19
 
-// Zero means top position.
+// Zero means all legs are in air.
 
 const LegConfig legConfigA = {
   "LEG_A", // name

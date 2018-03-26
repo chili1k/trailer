@@ -1,7 +1,13 @@
+## About
+
+Trailer balancer written for the Arduino platform.
+
 ## Dev env setup
 
-Install MPU and I2C library using Arudino IDE:
-https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050
+Install MPU, I2C and Debounce2 library using Arudino IDE:
+
+* https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050
+* https://github.com/thomasfredericks/Bounce2
 
 Uses Arduino-Makefile project:
 https://github.com/sudar/Arduino-Makefile

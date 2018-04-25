@@ -21,7 +21,6 @@
 
 int lastAmpReadTime = 0;
 float previousAmps = 0.0;
-FilterOnePole lowpassFilter(LOWPASS, FILTER_FREQUENCY);   
 
 Leg::Leg(LegConfig legConfig) {
   this->legConfig = legConfig;

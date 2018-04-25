@@ -27,3 +27,12 @@ bool LegUtil::allLegsInPosition(Leg *legs, LegPosition position) {
   return true;
 }
 
+bool LegUtil::anyLegInPosition(Leg *legs, LegPosition position) {
+  for (int i = 0; i < MAX_LEGS; i++) {
+    if (legs[i].getPosition() == position) {
+      return true;
+    }
+  }
+
+  return false;
+}

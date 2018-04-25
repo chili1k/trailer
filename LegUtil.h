@@ -8,6 +8,7 @@ class LegUtil {
     static void stopAllMotors(Leg *legs);
     static bool allLegsOnGround(Leg *legs);
     static bool allLegsInPosition(Leg *legs, LegPosition position);
+    static bool anyLegInPosition(Leg *legs, LegPosition position);
 };
 
 #endif

@@ -6,13 +6,15 @@
 #ifndef GYRO_H
 #define GYRO_H
 
-enum Position { UnderBalanced, Balanced, OverBalanced };
+enum class Axe { Yaw, Pitch, Roll };
 
 class Gyro {
   public:
     Gyro();
-    Position getPitchPosition();
-    Position getRollPosition();
+    float getPitch();
+    float getRoll();
+    bool isPitchBalanced();
+    bool isRollBalanced();
     bool isBalanced();
     void loop();
     void setup();

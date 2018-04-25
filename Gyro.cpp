@@ -40,7 +40,8 @@ void dmpDataReady() {
 
 void Gyro::setup() {
   Wire.begin();
-  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  // 400kbits can be too fast
+  //Wire.setClock(100000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   Serial.println(F("Initializing I2C devices..."));
   mpu.initialize();
@@ -171,33 +172,22 @@ void Gyro::printPitchRoll() {
   isBalanced();
 }
 
-Position Gyro::getPitchPosition() {
-  if (pitch < MIN_STABLE_ANGLE*-1) {
-    return UnderBalanced;
-  } else if (pitch > MIN_STABLE_ANGLE) {
-    return OverBalanced;
-  }
-
-  return Balanced;
+float Gyro::getPitch() {
+  return pitch;
 }
 
-Position Gyro::getRollPosition() {
-  if (roll < MIN_STABLE_ANGLE*-1) {
-    return UnderBalanced;
-  } else if (roll > MIN_STABLE_ANGLE) {
-    return OverBalanced;
-  }
+float Gyro::getRoll() {
+  return roll;
+}
 
-  return Balanced;
+bool Gyro::isPitchBalanced() {
+  return pitch == 0.0;
+}
+
+bool Gyro::isRollBalanced() {
+  return roll == 0.0;
 }
 
 bool Gyro::isBalanced() {
-//  Serial.println(getRollPosition());
-//  Serial.println(getPitchPosition());
-  
-  bool isBalanced = (getRollPosition() == Balanced && getPitchPosition() == Balanced);
-  if (isBalanced) {
-    Serial.println("System balanced. Good job!");
-  }
-  return isBalanced;
+  return isPitchBalanced() && isRollBalanced();
 }

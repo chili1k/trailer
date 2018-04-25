@@ -6,6 +6,15 @@
 #include "Config.h"
 
 enum class State { NoState, ZeroState, ToZeroState, ToGroundState, ToFinalState, BalancedState, BalancingState, GroundState, FinalState, ErrorState };
+enum class BalancingState { NotBalancing, Step1, Step2, Done };
+
+struct BalancingAction {
+  int steps;
+  Axe step1Axe;
+  Axe step2Axe;
+  Leg *step1Legs[2];
+  Leg *step2Legs[2];
+};
 
 
 /*
@@ -65,10 +74,16 @@ class Balancer {
     Leg legs[MAX_LEGS] = { Leg(legConfigA), Leg(legConfigB), Leg(legConfigC), Leg(legConfigD) };
     Gyro gyro;
     State state = State::NoState;
+    BalancingState balancingState = BalancingState::NotBalancing;
+    BalancingAction balancingAction;
 
     void setState(State newState);
 
-    void expandLeg(Leg &leg);
+    void expandLegs(Leg *leg1, Leg *leg2);
+    void determineBalancingState();
+
+    void loopBalancingStep1();
+    void loopBalancingStep2();
 
     void stateToZeroLoop();
     void stateToGroundLoop();

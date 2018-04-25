@@ -60,6 +60,7 @@ void Balancer::toFinal() {
 }
 
 void Balancer::balance() {
+  balancingState = BalancingState::NotBalancing;
   setState(State::BalancingState);
 }
 
@@ -155,13 +156,16 @@ void Balancer::stateToFinalLoop() {
 }
 
 void Balancer::stateBalancingLoop() {
+  /*
   if (getState() != State::GroundState) {
     DPRINTLN(F("Trailer needs to be on ground!"));
+    setState(State::NoState);
     return;
   }
+  */
 
   // Trailer can only be balanced if all legs are on ground
-  if (gyro.isBalanced() && LegUtil::allLegsOnGround(legs)) {
+  if (gyro.isBalanced()) { // && LegUtil::allLegsOnGround(legs)) {
     DPRINTLN(F("Trailed BALANCED!"));
     LegUtil::stopAllMotors(legs);
     setState(State::BalancedState);
@@ -169,36 +173,142 @@ void Balancer::stateBalancingLoop() {
   }
 
   // If all legs in final position
-  if (LegUtil::allLegsInPosition(legs, LegPosition::Final)) {
-    DPRINTLN(F("Cannot balance. All legs reached final position."));
+  if (LegUtil::anyLegInPosition(legs, LegPosition::Final)) {
+    DPRINTLN(F("Cannot balance. One of the legs reached final position."));
     LegUtil::stopAllMotors(legs);
     setState(State::ErrorState);
     return;
   }
 
-  // Could also be A and C at the same time
-  if (gyro.getPitchPosition() == UnderBalanced && gyro.getRollPosition() == UnderBalanced) {
-    expandLeg(legs[LEG_A]);
-  } else if (gyro.getPitchPosition() == UnderBalanced && gyro.getRollPosition() == OverBalanced) {
-    expandLeg(legs[LEG_B]);
-  // Could also be B and D at the same time
-  } else if (gyro.getPitchPosition() == OverBalanced && gyro.getRollPosition() == OverBalanced) {
-    expandLeg(legs[LEG_C]);
-  } else if (gyro.getPitchPosition() == OverBalanced && gyro.getRollPosition() == UnderBalanced) {
-    expandLeg(legs[LEG_D]);
+  if (balancingState == BalancingState::NotBalancing) {
+    determineBalancingState();
+    if (balancingState == BalancingState::NotBalancing) {
+      DPRINTLN(F("Cannot balance! Unknown gyro position."));
+      setState(State::ErrorState);
+      return;
+    }
+
+    expandLegs(balancingAction.step1Legs[0], balancingAction.step1Legs[1]);
+  }
+
+  switch (balancingState) {
+    case BalancingState::Step1:
+      loopBalancingStep1();
+      break;
+    case BalancingState::Step2:
+      loopBalancingStep2();
+      break;
+    case BalancingState::Done:
+      if (!gyro.isBalanced()) {
+        DPRINTLN(F("Cannot Balancing. All balancing steps done."));
+        setState(State::ErrorState);
+      }
+      break;
+    default:
+      DPRINTLN(F("Invalid balancing state!"));
+      setState(State::ErrorState);
   }
 }
 
-void Balancer::expandLeg(Leg &leg) {
-  // Start only if not already started. Stop any other motors.
-  if (leg.isMotorStopped()) {
-    LegUtil::stopAllMotors(legs);
-    // We don't want to be restarting too fast
-    delay(STOP_MOTORS_DLY);
-    leg.expand();
-    // Expand leg at least one second before trying to expand another leg
-    delay(EXPAND_LEG_DLY);
+void Balancer::loopBalancingStep1() {
+  bool stepDone = (balancingAction.step1Axe == Axe::Pitch && gyro.isPitchBalanced())
+                || (balancingAction.step1Axe == Axe::Roll && gyro.isRollBalanced());
+
+  if (stepDone) {
+    if (balancingAction.steps == 1) {
+      balancingState = BalancingState::Done;
+    } else if (balancingAction.steps == 2) {
+      balancingState = BalancingState::Step2;
+      expandLegs(balancingAction.step2Legs[0], balancingAction.step2Legs[1]);
+    } else {
+      // should really not happen
+      DPRINTLN(F("Unknown number of steps."));
+      setState(State::ErrorState);
+      return;
+    }
   }
+}
+
+void Balancer::loopBalancingStep2() {
+  bool stepDone = (balancingAction.step2Axe == Axe::Pitch && gyro.isPitchBalanced())
+                || (balancingAction.step2Axe == Axe::Roll && gyro.isRollBalanced());
+
+  if (stepDone) {
+    balancingState = BalancingState::Done;
+  }
+}
+
+void Balancer::determineBalancingState() {
+  float pitch = gyro.getPitch();
+  float roll = gyro.getRoll();
+
+  if (pitch == 0 && roll > 0) {
+    balancingAction.steps = 1;
+    balancingAction.step1Axe = Axe::Roll;
+    balancingAction.step1Legs[0] = &legs[LEG_C];
+    balancingAction.step1Legs[1] = &legs[LEG_D];
+  } else if (pitch == 0 && roll < 0) {
+    balancingAction.steps = 1;
+    balancingAction.step1Axe = Axe::Roll;
+    balancingAction.step1Legs[0] = &legs[LEG_A];
+    balancingAction.step1Legs[1] = &legs[LEG_B];
+  } else if (pitch > 0 && roll == 0) {
+    balancingAction.steps = 1;
+    balancingAction.step1Axe = Axe::Pitch;
+    balancingAction.step1Legs[0] = &legs[LEG_A];
+    balancingAction.step1Legs[1] = &legs[LEG_C];
+  } else if (pitch > 0 && roll > 0) {
+    balancingAction.steps = 2;
+    balancingAction.step1Axe = Axe::Pitch;
+    balancingAction.step1Legs[0] = &legs[LEG_A];
+    balancingAction.step1Legs[1] = &legs[LEG_C];
+    balancingAction.step2Axe = Axe::Roll;
+    balancingAction.step2Legs[0] = &legs[LEG_C];
+    balancingAction.step2Legs[1] = &legs[LEG_D];
+  } else if (pitch > 0 && roll < 0) {
+    balancingAction.steps = 2;
+    balancingAction.step1Axe = Axe::Pitch;
+    balancingAction.step1Legs[0] = &legs[LEG_A];
+    balancingAction.step1Legs[1] = &legs[LEG_C];
+    balancingAction.step2Axe = Axe::Roll;
+    balancingAction.step2Legs[0] = &legs[LEG_A];
+    balancingAction.step2Legs[1] = &legs[LEG_B];
+  } else if (pitch < 0 && roll == 0) {
+    balancingAction.steps = 1;
+    balancingAction.step1Axe = Axe::Pitch;
+    balancingAction.step1Legs[0] = &legs[LEG_B];
+    balancingAction.step1Legs[1] = &legs[LEG_D];
+  } else if (pitch < 0 && roll > 0) {
+    balancingAction.steps = 2;
+    balancingAction.step1Axe = Axe::Pitch;
+    balancingAction.step1Legs[0] = &legs[LEG_B];
+    balancingAction.step1Legs[1] = &legs[LEG_D];
+    balancingAction.step2Axe = Axe::Roll;
+    balancingAction.step2Legs[0] = &legs[LEG_C];
+    balancingAction.step2Legs[1] = &legs[LEG_D];
+  } else if (pitch < 0 && roll < 0) {
+    balancingAction.steps = 2;
+    balancingAction.step1Axe = Axe::Pitch;
+    balancingAction.step1Legs[0] = &legs[LEG_B];
+    balancingAction.step1Legs[1] = &legs[LEG_D];
+    balancingAction.step2Axe = Axe::Roll;
+    balancingAction.step2Legs[0] = &legs[LEG_A];
+    balancingAction.step2Legs[1] = &legs[LEG_B];
+  } else {
+    return;
+  }
+
+  balancingState = BalancingState::Step1;
+}
+
+void Balancer::expandLegs(Leg *leg1, Leg *leg2) {
+  LegUtil::stopAllMotors(legs);
+  // we don't want to be restarting too fast
+  delay(STOP_MOTORS_DLY);
+  leg1->expand();
+  leg2->expand();
+  // expand legs at least one second before trying to expand another leg
+  delay(EXPAND_LEG_DLY);
 }
 
 Leg *Balancer::getLegs() {

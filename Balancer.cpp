@@ -242,60 +242,75 @@ void Balancer::determineBalancingState() {
   float pitch = gyro.getPitch();
   float roll = gyro.getRoll();
 
-  if (pitch == 0 && roll > 0) {
+  if (pitch == 0.0 && roll > 0.0) {
     balancingAction.steps = 1;
     balancingAction.step1Axe = Axe::Roll;
     balancingAction.step1Legs[0] = &legs[LEG_C];
     balancingAction.step1Legs[1] = &legs[LEG_D];
-  } else if (pitch == 0 && roll < 0) {
+  } else if (pitch == 0.0 && roll < 0.0) {
     balancingAction.steps = 1;
     balancingAction.step1Axe = Axe::Roll;
     balancingAction.step1Legs[0] = &legs[LEG_A];
     balancingAction.step1Legs[1] = &legs[LEG_B];
-  } else if (pitch > 0 && roll == 0) {
+  } else if (pitch > 0.0 && roll == 0.0) {
     balancingAction.steps = 1;
     balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_A];
-    balancingAction.step1Legs[1] = &legs[LEG_C];
-  } else if (pitch > 0 && roll > 0) {
+    balancingAction.step1Legs[0] = &legs[LEG_D];
+    balancingAction.step1Legs[1] = &legs[LEG_B];
+  } else if (pitch > 0.0 && roll > 0.0) {
     balancingAction.steps = 2;
     balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_A];
-    balancingAction.step1Legs[1] = &legs[LEG_C];
+    balancingAction.step1Legs[0] = &legs[LEG_D];
+    balancingAction.step1Legs[1] = &legs[LEG_B];
     balancingAction.step2Axe = Axe::Roll;
     balancingAction.step2Legs[0] = &legs[LEG_C];
     balancingAction.step2Legs[1] = &legs[LEG_D];
-  } else if (pitch > 0 && roll < 0) {
+  } else if (pitch > 0.0 && roll < 0.0) {
     balancingAction.steps = 2;
     balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_A];
-    balancingAction.step1Legs[1] = &legs[LEG_C];
+    balancingAction.step1Legs[0] = &legs[LEG_D];
+    balancingAction.step1Legs[1] = &legs[LEG_B];
     balancingAction.step2Axe = Axe::Roll;
     balancingAction.step2Legs[0] = &legs[LEG_A];
     balancingAction.step2Legs[1] = &legs[LEG_B];
-  } else if (pitch < 0 && roll == 0) {
+  } else if (pitch < 0.0 && roll == 0.0) {
     balancingAction.steps = 1;
     balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_B];
-    balancingAction.step1Legs[1] = &legs[LEG_D];
-  } else if (pitch < 0 && roll > 0) {
+    balancingAction.step1Legs[0] = &legs[LEG_A];
+    balancingAction.step1Legs[1] = &legs[LEG_C];
+  } else if (pitch < 0.0 && roll > 0.0) {
     balancingAction.steps = 2;
     balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_B];
-    balancingAction.step1Legs[1] = &legs[LEG_D];
+    balancingAction.step1Legs[0] = &legs[LEG_A];
+    balancingAction.step1Legs[1] = &legs[LEG_C];
     balancingAction.step2Axe = Axe::Roll;
     balancingAction.step2Legs[0] = &legs[LEG_C];
     balancingAction.step2Legs[1] = &legs[LEG_D];
-  } else if (pitch < 0 && roll < 0) {
+  } else if (pitch < 0.0 && roll < 0.0) {
     balancingAction.steps = 2;
     balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_B];
-    balancingAction.step1Legs[1] = &legs[LEG_D];
+    balancingAction.step1Legs[0] = &legs[LEG_A];
+    balancingAction.step1Legs[1] = &legs[LEG_C];
     balancingAction.step2Axe = Axe::Roll;
     balancingAction.step2Legs[0] = &legs[LEG_A];
     balancingAction.step2Legs[1] = &legs[LEG_B];
   } else {
     return;
+  }
+
+  if (balancingAction.steps == 2) {
+    // reverse steps if roll > pitch
+    if (abs(roll) > abs(pitch)) {
+      Leg *leg1 = balancingAction.step1Legs[0];
+      Leg *leg2 = balancingAction.step1Legs[1];
+
+      balancingAction.step1Axe = Axe::Roll;
+      balancingAction.step1Legs[0] = balancingAction.step2Legs[0];
+      balancingAction.step1Legs[1] = balancingAction.step2Legs[1];
+      balancingAction.step2Axe = Axe::Pitch;
+      balancingAction.step2Legs[0] = leg1;
+      balancingAction.step2Legs[1] = leg2;
+    }
   }
 
   balancingState = BalancingState::Step1;

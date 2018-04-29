@@ -12,7 +12,7 @@
 #include <math.h>
 
 // Minimum angle where the dimension is considered stable
-#define MIN_STABLE_ANGLE 0.0
+#define MIN_STABLE_ANGLE 0.01
 
 MPU6050 mpu;
 bool dmpReady = false;  // set true if DMP init was successful
@@ -41,7 +41,7 @@ void dmpDataReady() {
 void Gyro::setup() {
   Wire.begin();
   // 400kbits can be too fast
-  //Wire.setClock(100000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  Wire.setClock(100000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   Serial.println(F("Initializing I2C devices..."));
   mpu.initialize();
@@ -181,11 +181,11 @@ float Gyro::getRoll() {
 }
 
 bool Gyro::isPitchBalanced() {
-  return pitch == 0.0;
+  return abs(pitch) < MIN_STABLE_ANGLE;
 }
 
 bool Gyro::isRollBalanced() {
-  return roll == 0.0;
+  return abs(roll) < MIN_STABLE_ANGLE;
 }
 
 bool Gyro::isBalanced() {

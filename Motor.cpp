@@ -12,20 +12,18 @@ void Motor::setup(int directionPin, int powerPin) {
   digitalWrite(powerPin, MOTOR_OFF_PIN_MODE);
 }
 
-void Motor::start(Direction newDirection) {
-  if (currentDirection == newDirection) {
-    return;
-  }
+bool getPinMode(Direction direction) {
+  return (direction != Stopped ? MOTOR_ON_PIN_MODE : MOTOR_OFF_PIN_MODE);
+}
 
+void Motor::start(Direction newDirection) {
   if (newDirection == Forward) {
     digitalWrite(directionPin, MOTOR_FORWARD_STATE);
   } else if (newDirection == Reverse) {
     digitalWrite(directionPin, MOTOR_REVERSE_STATE);
   }
 
-  bool powerPinMode = (newDirection != Stopped ? MOTOR_ON_PIN_MODE : MOTOR_OFF_PIN_MODE);
-
-  digitalWrite(powerPin, powerPinMode);
+  digitalWrite(powerPin, getPinMode(newDirection));
 
   currentDirection = newDirection;
 }
@@ -44,4 +42,3 @@ Direction Motor::getDirection() {
 void Motor::stop() {
   start(Stopped);
 }
-

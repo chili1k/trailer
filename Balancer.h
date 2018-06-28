@@ -6,14 +6,14 @@
 #include "Config.h"
 
 enum class State { NoState, ZeroState, ToZeroState, ToGroundState, ToFinalState, BalancedState, BalancingState, GroundState, FinalState, ErrorState };
-enum class BalancingState { NotBalancing, Step1, Step2, Done };
+enum class BalancingState { NotBalancing, Balancing, Done, Error };
 
 struct BalancingAction {
-  int steps;
-  Axe step1Axe;
-  Axe step2Axe;
-  Leg *step1Legs[2];
-  Leg *step2Legs[2];
+  int tries;
+  int badDeltas;
+  Axe axe;
+  Leg *legs[2];
+  float startPosition;
 };
 
 
@@ -82,8 +82,7 @@ class Balancer {
     void expandLegs(Leg *leg1, Leg *leg2);
     void determineBalancingState();
 
-    void loopBalancingStep1();
-    void loopBalancingStep2();
+    void loopBalancingStep();
 
     void stateToZeroLoop();
     void stateToGroundLoop();

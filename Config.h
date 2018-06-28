@@ -17,6 +17,9 @@ pitch  -  +------------+  + pitch
       roll
 */
 
+//#define MODEL_UNO
+#define MODEL_MEGA
+
 #define SERIAL_BAUD_RATE 115200
 
 // Refresh display interval
@@ -32,7 +35,11 @@ pitch  -  +------------+  + pitch
 #define MOTOR_ON_PIN_MODE false
 #define MOTOR_OFF_PIN_MODE !MOTOR_ON_PIN_MODE
 
-#define GYRO_INTERRUPT_PIN 19
+#ifdef MODEL_MEGA
+  #define GYRO_INTERRUPT_PIN 19
+#else
+  #define GYRO_INTERRUPT_PIN 2
+#endif
 
 // Zero means all legs are in air.
 

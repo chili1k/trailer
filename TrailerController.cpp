@@ -181,13 +181,10 @@ void TrailerController::printGyro() {
 
   float *ypr = gyro->getYPR();
   Serial.print(F("Gyro pitch, roll: ["));
-  Serial.print(ypr[0]);
+  Serial.print(ypr[1], 4);
   Serial.print(F(", "));
-  Serial.print(ypr[1]);
-  Serial.print(F(", "));
-  Serial.print(ypr[2]);
+  Serial.print(ypr[2], 4);
   Serial.print(F(" ]"));
-
 }
 
 void TrailerController::printAmpers(Leg *leg) {

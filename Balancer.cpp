@@ -6,6 +6,14 @@
 #include "Config.h"
 
 #include <Arduino.h>
+#include <math.h>
+
+#define MAX_TRIES 10
+#define MAX_BAD_DELTAS 5
+#define MAX_DELTA_POSITION 0.04
+#define BALANCING_UPDATE_INTERVAL 200
+
+unsigned long lastBalancingUpdate;
 
 void Balancer::setup() {
   gyro.setup();
@@ -60,6 +68,7 @@ void Balancer::toFinal() {
 }
 
 void Balancer::balance() {
+  balancingAction.tries = 0;
   balancingState = BalancingState::NotBalancing;
   setState(State::BalancingState);
 }
@@ -73,14 +82,14 @@ void Balancer::forceExpandLeg(int legId) {
 
 void Balancer::forceCollapseLeg(int legId) {
   // Same for all states.
+  setState(State::NoState);
   stopAllLegs();
   legs[legId].collapse();
-  setState(State::NoState);
 }
 
 void Balancer::stopAllLegs() {
-  LegUtil::stopAllMotors(legs);
   setState(State::NoState);
+  LegUtil::stopAllMotors(legs);
 }
 
 void Balancer::setState(State newState) {
@@ -164,7 +173,15 @@ void Balancer::stateBalancingLoop() {
   }
   */
 
-  // Trailer can only be balanced if all legs are on ground
+  unsigned long now = millis();
+
+  if (now - lastBalancingUpdate < BALANCING_UPDATE_INTERVAL) {
+    return;
+  }
+
+  lastBalancingUpdate = millis();
+
+  // trailer can only be balanced if all legs are on ground
   if (gyro.isBalanced()) { // && LegUtil::allLegsOnGround(legs)) {
     DPRINTLN(F("Trailed BALANCED!"));
     LegUtil::stopAllMotors(legs);
@@ -172,7 +189,7 @@ void Balancer::stateBalancingLoop() {
     return;
   }
 
-  // If all legs in final position
+  // any leg in final position
   if (LegUtil::anyLegInPosition(legs, LegPosition::Final)) {
     DPRINTLN(F("Cannot balance. One of the legs reached final position."));
     LegUtil::stopAllMotors(legs);
@@ -180,29 +197,29 @@ void Balancer::stateBalancingLoop() {
     return;
   }
 
+  if (balancingAction.tries > MAX_TRIES) {
+    DPRINTLN(F("Cannot balance. Max. tries exceeded."));
+    setState(State::ErrorState);
+  }
+
   if (balancingState == BalancingState::NotBalancing) {
     determineBalancingState();
-    if (balancingState == BalancingState::NotBalancing) {
+    if (balancingState != BalancingState::Balancing) {
       DPRINTLN(F("Cannot balance! Unknown gyro position."));
       setState(State::ErrorState);
       return;
     }
 
-    expandLegs(balancingAction.step1Legs[0], balancingAction.step1Legs[1]);
+    expandLegs(balancingAction.legs[0], balancingAction.legs[1]);
   }
 
   switch (balancingState) {
-    case BalancingState::Step1:
-      loopBalancingStep1();
+    case BalancingState::Balancing:
+      loopBalancingStep();
       break;
-    case BalancingState::Step2:
-      loopBalancingStep2();
-      break;
-    case BalancingState::Done:
-      if (!gyro.isBalanced()) {
-        DPRINTLN(F("Cannot Balancing. All balancing steps done."));
-        setState(State::ErrorState);
-      }
+    case BalancingState::Error:
+      DPRINTLN(F("Cannot balance."));
+      setState(State::ErrorState);
       break;
     default:
       DPRINTLN(F("Invalid balancing state!"));
@@ -210,31 +227,38 @@ void Balancer::stateBalancingLoop() {
   }
 }
 
-void Balancer::loopBalancingStep1() {
-  bool stepDone = (balancingAction.step1Axe == Axe::Pitch && gyro.isPitchBalanced())
-                || (balancingAction.step1Axe == Axe::Roll && gyro.isRollBalanced());
+void Balancer::loopBalancingStep() {
+  bool isAxeBalanced;
+  // diff from start position
+  float delta;
+  float pitch = gyro.getPitch();
+  float roll = gyro.getRoll();
 
-  if (stepDone) {
-    if (balancingAction.steps == 1) {
-      balancingState = BalancingState::Done;
-    } else if (balancingAction.steps == 2) {
-      balancingState = BalancingState::Step2;
-      expandLegs(balancingAction.step2Legs[0], balancingAction.step2Legs[1]);
-    } else {
-      // should really not happen
-      DPRINTLN(F("Unknown number of steps."));
-      setState(State::ErrorState);
-      return;
-    }
+  if (balancingAction.axe == Axe::Pitch) {
+    isAxeBalanced = gyro.isPitchBalanced();  
+    delta = abs(balancingAction.startPosition - pitch);
+  } else {
+    isAxeBalanced = gyro.isRollBalanced();
+    delta = abs(balancingAction.startPosition - roll);
   }
-}
 
-void Balancer::loopBalancingStep2() {
-  bool stepDone = (balancingAction.step2Axe == Axe::Pitch && gyro.isPitchBalanced())
-                || (balancingAction.step2Axe == Axe::Roll && gyro.isRollBalanced());
-
-  if (stepDone) {
-    balancingState = BalancingState::Done;
+  if (isAxeBalanced) {
+    LegUtil::stopAllMotors(legs);
+    balancingState = BalancingState::NotBalancing;
+    return;
+  }
+  
+  if (delta > MAX_DELTA_POSITION) {
+    balancingAction.badDeltas++;
+    if (balancingAction.badDeltas > MAX_BAD_DELTAS) {
+      // something is wrong, rebalance
+      Serial.print(F("Bad deltas exceeded. Delta is: "));
+      Serial.println(delta, 4);
+      LegUtil::stopAllMotors(legs);
+      balancingState = BalancingState::NotBalancing;
+    }
+  } else {
+    balancingAction.badDeltas = 0;
   }
 }
 
@@ -242,78 +266,44 @@ void Balancer::determineBalancingState() {
   float pitch = gyro.getPitch();
   float roll = gyro.getRoll();
 
-  if (pitch == 0.0 && roll > 0.0) {
-    balancingAction.steps = 1;
-    balancingAction.step1Axe = Axe::Roll;
-    balancingAction.step1Legs[0] = &legs[LEG_C];
-    balancingAction.step1Legs[1] = &legs[LEG_D];
-  } else if (pitch == 0.0 && roll < 0.0) {
-    balancingAction.steps = 1;
-    balancingAction.step1Axe = Axe::Roll;
-    balancingAction.step1Legs[0] = &legs[LEG_A];
-    balancingAction.step1Legs[1] = &legs[LEG_B];
-  } else if (pitch > 0.0 && roll == 0.0) {
-    balancingAction.steps = 1;
-    balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_D];
-    balancingAction.step1Legs[1] = &legs[LEG_B];
-  } else if (pitch > 0.0 && roll > 0.0) {
-    balancingAction.steps = 2;
-    balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_D];
-    balancingAction.step1Legs[1] = &legs[LEG_B];
-    balancingAction.step2Axe = Axe::Roll;
-    balancingAction.step2Legs[0] = &legs[LEG_C];
-    balancingAction.step2Legs[1] = &legs[LEG_D];
-  } else if (pitch > 0.0 && roll < 0.0) {
-    balancingAction.steps = 2;
-    balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_D];
-    balancingAction.step1Legs[1] = &legs[LEG_B];
-    balancingAction.step2Axe = Axe::Roll;
-    balancingAction.step2Legs[0] = &legs[LEG_A];
-    balancingAction.step2Legs[1] = &legs[LEG_B];
-  } else if (pitch < 0.0 && roll == 0.0) {
-    balancingAction.steps = 1;
-    balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_A];
-    balancingAction.step1Legs[1] = &legs[LEG_C];
-  } else if (pitch < 0.0 && roll > 0.0) {
-    balancingAction.steps = 2;
-    balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_A];
-    balancingAction.step1Legs[1] = &legs[LEG_C];
-    balancingAction.step2Axe = Axe::Roll;
-    balancingAction.step2Legs[0] = &legs[LEG_C];
-    balancingAction.step2Legs[1] = &legs[LEG_D];
-  } else if (pitch < 0.0 && roll < 0.0) {
-    balancingAction.steps = 2;
-    balancingAction.step1Axe = Axe::Pitch;
-    balancingAction.step1Legs[0] = &legs[LEG_A];
-    balancingAction.step1Legs[1] = &legs[LEG_C];
-    balancingAction.step2Axe = Axe::Roll;
-    balancingAction.step2Legs[0] = &legs[LEG_A];
-    balancingAction.step2Legs[1] = &legs[LEG_B];
+  balancingAction.badDeltas = 0;
+  balancingAction.tries++;
+  DPRINT(F("Balancing try no. "));
+  DPRINT(balancingAction.tries);
+  DPRINT(F("/"));
+  DPRINTLN(MAX_TRIES);
+
+  balancingState = BalancingState::Balancing;
+
+  if (abs(pitch) > abs(roll)) {
+    balancingAction.axe = Axe::Pitch;
+    balancingAction.startPosition = pitch;
+
+    if (pitch > 0.0) {
+      balancingAction.legs[0] = &legs[LEG_A];
+      balancingAction.legs[1] = &legs[LEG_C];
+    } else if (pitch < 0.0){
+      balancingAction.legs[0] = &legs[LEG_D];
+      balancingAction.legs[1] = &legs[LEG_B];
+    } else {
+      DPRINTLN(F("Pitch should not be 0 at this point."));
+      balancingState = BalancingState::Error; 
+    }
   } else {
-    return;
-  }
+    balancingAction.axe = Axe::Roll;
+    balancingAction.startPosition = roll;
 
-  if (balancingAction.steps == 2) {
-    // reverse steps if roll > pitch
-    if (abs(roll) > abs(pitch)) {
-      Leg *leg1 = balancingAction.step1Legs[0];
-      Leg *leg2 = balancingAction.step1Legs[1];
-
-      balancingAction.step1Axe = Axe::Roll;
-      balancingAction.step1Legs[0] = balancingAction.step2Legs[0];
-      balancingAction.step1Legs[1] = balancingAction.step2Legs[1];
-      balancingAction.step2Axe = Axe::Pitch;
-      balancingAction.step2Legs[0] = leg1;
-      balancingAction.step2Legs[1] = leg2;
+    if (roll > 0.0) {
+      balancingAction.legs[0] = &legs[LEG_A];
+      balancingAction.legs[1] = &legs[LEG_B];
+    } else if (roll < 0.0) {
+      balancingAction.legs[0] = &legs[LEG_C];
+      balancingAction.legs[1] = &legs[LEG_D];
+    } else {
+      DPRINTLN(F("Roll should not be 0 at this point."));
+      balancingState = BalancingState::Error; 
     }
   }
-
-  balancingState = BalancingState::Step1;
 }
 
 void Balancer::expandLegs(Leg *leg1, Leg *leg2) {

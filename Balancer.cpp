@@ -9,8 +9,8 @@
 #include <math.h>
 
 #define MAX_TRIES 10
-#define MAX_BAD_DELTAS 5
-#define MAX_DELTA_POSITION 0.04
+//#define MAX_BAD_DELTAS 5
+#define MAX_DELTA_POSITION 0.005
 #define BALANCING_UPDATE_INTERVAL 200
 
 unsigned long lastBalancingUpdate;
@@ -236,10 +236,12 @@ void Balancer::loopBalancingStep() {
 
   if (balancingAction.axe == Axe::Pitch) {
     isAxeBalanced = gyro.isPitchBalanced();  
-    delta = abs(balancingAction.startPosition - pitch);
+    delta = abs(balancingAction.previousPosition - pitch);
+    balancingAction.previousPosition = pitch;
   } else {
     isAxeBalanced = gyro.isRollBalanced();
-    delta = abs(balancingAction.startPosition - roll);
+    delta = abs(balancingAction.previousPosition - roll);
+    balancingAction.previousPosition = roll;
   }
 
   if (isAxeBalanced) {
@@ -249,14 +251,14 @@ void Balancer::loopBalancingStep() {
   }
   
   if (delta > MAX_DELTA_POSITION) {
-    balancingAction.badDeltas++;
-    if (balancingAction.badDeltas > MAX_BAD_DELTAS) {
+//    balancingAction.badDeltas++;
+//    if (balancingAction.badDeltas > MAX_BAD_DELTAS) {
       // something is wrong, rebalance
-      Serial.print(F("Bad deltas exceeded. Delta is: "));
+      Serial.print(F("Bad delta: "));
       Serial.println(delta, 4);
       LegUtil::stopAllMotors(legs);
       balancingState = BalancingState::NotBalancing;
-    }
+    //}
   } else {
     balancingAction.badDeltas = 0;
   }
@@ -277,7 +279,7 @@ void Balancer::determineBalancingState() {
 
   if (abs(pitch) > abs(roll)) {
     balancingAction.axe = Axe::Pitch;
-    balancingAction.startPosition = pitch;
+    balancingAction.previousPosition = pitch;
 
     if (pitch > 0.0) {
       balancingAction.legs[0] = &legs[LEG_A];
@@ -291,7 +293,7 @@ void Balancer::determineBalancingState() {
     }
   } else {
     balancingAction.axe = Axe::Roll;
-    balancingAction.startPosition = roll;
+    balancingAction.previousPosition = roll;
 
     if (roll > 0.0) {
       balancingAction.legs[0] = &legs[LEG_A];

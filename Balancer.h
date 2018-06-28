@@ -13,7 +13,7 @@ struct BalancingAction {
   int badDeltas;
   Axe axe;
   Leg *legs[2];
-  float startPosition;
+  float previousPosition;
 };
 
 

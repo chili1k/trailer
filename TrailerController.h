@@ -1,6 +1,8 @@
 #ifndef TrailerController_h
 #define TrailerController_h
 
+#include <Bounce2.h>
+
 #include "Leg.h"
 #include "Balancer.h"
 
@@ -15,6 +17,7 @@ class TrailerController {
   private:
     Balancer balancer;
     void handleInput();
+    void handleEmergencyButton();
     void startSingleMotor();
     void refreshDisplay();
     void printHeader();
@@ -27,6 +30,7 @@ class TrailerController {
     void printTitle();
 
     unsigned long lastRefreshTime = 0;
+    Bounce emergencyButton;
 };
 
 #endif

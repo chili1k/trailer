@@ -28,6 +28,8 @@ pitch  -  +------------+  + pitch
 // How many amps are flowing when leg is on ground.
 #define LEG_ON_GROUND_AMPS 10.0
 
+#define EMERGENCY_STOP_PIN 3
+
 // Relay state controlls motor direction.
 #define MOTOR_FORWARD_STATE false
 #define MOTOR_REVERSE_STATE !MOTOR_FORWARD_STATE

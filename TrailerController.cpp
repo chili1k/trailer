@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Bounce2.h>
 
 #include "TrailerController.h"
 #include "Leg.h"
@@ -8,18 +9,42 @@
 #include "Ver.h"
 #include "Debug.h"
 
+bool wasEmergencyButtonPushed;
+
 void TrailerController::setup() {
   Serial.begin(SERIAL_BAUD_RATE);
   balancer.setup();
   printTitle();
+
+  pinMode(EMERGENCY_STOP_PIN, INPUT);
+  emergencyButton.attach(EMERGENCY_STOP_PIN);
+  emergencyButton.interval(20);
+  
 }
 
 void TrailerController::loop() {
+  handleEmergencyButton();
   balancer.loop();
 
   // Main loop
   refreshDisplay();
   handleInput();
+}
+
+void TrailerController::handleEmergencyButton() {
+  emergencyButton.update();
+
+  bool pressDetected = emergencyButton.read();
+  if (!wasEmergencyButtonPushed) {
+    if (pressDetected) {
+      balancer.stopAllLegs();
+      wasEmergencyButtonPushed = true;
+    }
+  } else {
+    if (!pressDetected) {
+      wasEmergencyButtonPushed = false;
+    }
+  }
 }
 
 void TrailerController::printCommands() {

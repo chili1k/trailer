@@ -19,6 +19,7 @@ class TrailerController {
     void handleInput();
     void handleEmergencyButton();
     void startSingleMotor();
+    void blinkLed();
     void refreshDisplay();
     void printHeader();
     void printTrailerState();

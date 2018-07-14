@@ -9,6 +9,7 @@ void Motor::setup(int directionPin, int powerPin) {
 
   pinMode(directionPin, OUTPUT);
   pinMode(powerPin, OUTPUT);
+  digitalWrite(directionPin, MOTOR_OFF_PIN_MODE);
   digitalWrite(powerPin, MOTOR_OFF_PIN_MODE);
 }
 

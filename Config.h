@@ -20,6 +20,8 @@ pitch  -  +------------+  + pitch
 //#define MODEL_UNO
 #define MODEL_MEGA
 
+#define BLINK_LED_PIN 13
+
 #define SERIAL_BAUD_RATE 115200
 
 // Refresh display interval

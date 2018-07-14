@@ -24,7 +24,9 @@ void Balancer::setup() {
 }
 
 void Balancer::loop() {
+  //DPRINTLN(F("Gyro loop start"));
   gyro.loop();
+  //DPRINTLN(F("Gyro loop end"));
 
   for (int i = 0; i < MAX_LEGS; i++) {
     legs[i].loop();

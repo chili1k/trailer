@@ -1,6 +1,9 @@
 #include "Gyro.h"
 #include "Arduino.h"
 #include "Config.h"
+#include "Debug.h"
+
+// https://github.com/wmarkow/Arduino/tree/afc25a64316e38f29cf887f546b8a09c73375838/hardware/arduino/avr/libraries/Wire/src
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
@@ -21,7 +24,6 @@ bool dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
-uint16_t fifoCount;     // count of all bytes currently in FIFO
 uint8_t fifoBuffer[64]; // FIFO storage buffer
 
 Quaternion q;           // [w, x, y, z]         quaternion container
@@ -41,6 +43,8 @@ void dmpDataReady() {
 }
 
 void Gyro::setup() {
+  Wire.setTimeoutInMillis((uint8_t) 500);
+
   Wire.begin();
   // 400kbits can be too fast
 //  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
@@ -114,42 +118,61 @@ If calibration was succesful write down your offsets so you can set them in your
   }
 }
 
-void Gyro::loop() {
-  if (!dmpReady || !mpuInterrupt) return;
-  
-  // wait for MPU interrupt or extra packet(s) available
-  while (!mpuInterrupt && fifoCount < packetSize) { }
-
+void Gyro::readGyro() {
   mpuInterrupt = false;
-  fifoCount = mpu.getFIFOCount();
+  //DPRINTLN(F("Get fifo"));
+  uint16_t fifoCount = mpu.getFIFOCount();
+  //DPRINTLN(F("Got fifo"));
 
   if (fifoCount == 0) {
     //Serial.println(F("FIFO count 0"));
   } else if (fifoCount == 1024) {
     Serial.println(F("FIFO overflow"));
+    //DPRINT(F("Reset fifo start 1"));
     mpu.resetFIFO();
+    //DPRINTLN(F(" / end"));
   } else { 
     if (fifoCount % packetSize != 0) {
       Serial.print(F("Packet is corrupted. Fifo count: "));
       Serial.println(fifoCount);
+      //DPRINT(F("Reset fifo start 2"));
       mpu.resetFIFO();
+      //DPRINTLN(F(" / end"));
     } else {
+
+      unsigned long tmStartRead = millis();
       while (fifoCount >= packetSize) {
+        //DPRINT(F("MPU get fifo bytest start"));
+        // tu crkne
         mpu.getFIFOBytes(fifoBuffer, packetSize);
+        //DPRINTLN(F(" / end"));
         fifoCount -= packetSize;
       }
 
-      //Serial.println(F("Get quaternion"));
+      if (millis() - tmStartRead > 200) {
+        //DPRINTLN(F("I2C failed. Reinitializing ..."));
+        Wire.end();
+        Wire.begin();
+      }
+
+      //DPRINT(F("Q"));
       mpu.dmpGetQuaternion(&q, fifoBuffer);
-      //Serial.println(F("Get gravity"));
+      //DPRINT(F("G"));
       mpu.dmpGetGravity(&gravity, &q);
-      //Serial.println(F("Get ypr"));
+      //DPRINT(F("Y"));
       mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+      //DPRINTLN(F("!"));
 
       pitch = ypr[1];
       roll = ypr[2];
     }
   }
+}
+
+void Gyro::loop() {
+  if (!dmpReady || !mpuInterrupt) return;
+  
+  readGyro();
 
   /*
   // check for overflow (this should never happen unless our code is too inefficient)

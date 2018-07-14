@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Bounce2.h>
+#include <avr/wdt.h>
 
 #include "TrailerController.h"
 #include "Leg.h"
@@ -10,25 +11,34 @@
 #include "Debug.h"
 
 bool wasEmergencyButtonPushed;
+bool blinkLedState;
 
 void TrailerController::setup() {
   Serial.begin(SERIAL_BAUD_RATE);
   balancer.setup();
   printTitle();
-
+  
+  pinMode(BLINK_LED_PIN, OUTPUT);
   pinMode(EMERGENCY_STOP_PIN, INPUT);
   emergencyButton.attach(EMERGENCY_STOP_PIN);
   emergencyButton.interval(20);
   
+  //wdt_enable(WDTO_4S);
 }
 
 void TrailerController::loop() {
   handleEmergencyButton();
   balancer.loop();
+  //wdt_reset();
 
   // Main loop
   refreshDisplay();
   handleInput();
+}
+
+void TrailerController::blinkLed() {
+  blinkLedState = !blinkLedState;
+  digitalWrite(BLINK_LED_PIN, blinkLedState);
 }
 
 void TrailerController::handleEmergencyButton() {
@@ -137,6 +147,8 @@ void TrailerController::refreshDisplay() {
   if ((now - lastRefreshTime) < DISPLAY_REFRESH_MS) {
     return;
   }
+
+  blinkLed();
   
   timestamp++;
   lastRefreshTime = now;

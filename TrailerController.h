@@ -29,6 +29,7 @@ class TrailerController {
     void printCommands();
     void printTitle();
 
+    unsigned long timestamp = 0;
     unsigned long lastRefreshTime = 0;
     Bounce emergencyButton;
 };

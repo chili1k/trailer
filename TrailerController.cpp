@@ -137,7 +137,8 @@ void TrailerController::refreshDisplay() {
   if ((now - lastRefreshTime) < DISPLAY_REFRESH_MS) {
     return;
   }
-
+  
+  timestamp++;
   lastRefreshTime = now;
 
   printHeader();
@@ -157,6 +158,8 @@ void TrailerController::refreshDisplay() {
 }
 
 void TrailerController::printHeader() {
+  Serial.print(F("#"));
+  Serial.println(timestamp);
   Serial.println(F("Motor\tState\t\tCurrent"));
 }
 
@@ -244,7 +247,6 @@ void TrailerController::printLegPosition(Leg *leg) {
   if (leg->isOnGround()) {
     Serial.print(F(" Ground"));
   }
-
 }
 
 void TrailerController::printTitle() {

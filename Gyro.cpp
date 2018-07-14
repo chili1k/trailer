@@ -14,6 +14,8 @@
 // Minimum angle where the dimension is considered stable
 #define MIN_STABLE_ANGLE 0.0005
 
+#define INTERRUPT_TIMEOUT 2000
+
 MPU6050 mpu;
 bool dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU

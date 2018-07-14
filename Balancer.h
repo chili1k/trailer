@@ -83,6 +83,7 @@ class Balancer {
     void determineBalancingState();
 
     void loopBalancingStep();
+    bool isBadDelta(float newPosition);
 
     void stateToZeroLoop();
     void stateToGroundLoop();

@@ -9,7 +9,7 @@
 #include <math.h>
 
 #define MAX_TRIES 10
-//#define MAX_BAD_DELTAS 5
+#define MAX_BAD_DELTAS 5
 #define MAX_DELTA_POSITION 0.005
 #define BALANCING_UPDATE_INTERVAL 200
 
@@ -231,17 +231,14 @@ void Balancer::loopBalancingStep() {
   bool isAxeBalanced;
   // diff from start position
   float delta;
-  float pitch = gyro.getPitch();
-  float roll = gyro.getRoll();
+  float newPosition;
 
   if (balancingAction.axe == Axe::Pitch) {
     isAxeBalanced = gyro.isPitchBalanced();  
-    delta = abs(balancingAction.previousPosition - pitch);
-    balancingAction.previousPosition = pitch;
+    newPosition = gyro.getPitch();
   } else {
     isAxeBalanced = gyro.isRollBalanced();
-    delta = abs(balancingAction.previousPosition - roll);
-    balancingAction.previousPosition = roll;
+    newPosition = gyro.getRoll();
   }
 
   if (isAxeBalanced) {
@@ -249,19 +246,55 @@ void Balancer::loopBalancingStep() {
     balancingState = BalancingState::NotBalancing;
     return;
   }
-  
-  if (delta > MAX_DELTA_POSITION) {
-//    balancingAction.badDeltas++;
-//    if (balancingAction.badDeltas > MAX_BAD_DELTAS) {
+
+  bool isBadDelta = this->isBadDelta(newPosition);
+  if (!isBadDelta) {
+    // Only save positions which are ok. Do not save bad deltas.
+    balancingAction.previousPosition = newPosition;
+    balancingAction.badDeltas = 0;
+  } else {
+    balancingAction.badDeltas++;
+    if (balancingAction.badDeltas > MAX_BAD_DELTAS) {
       // something is wrong, rebalance
       Serial.print(F("Bad delta: "));
       Serial.println(delta, 4);
       LegUtil::stopAllMotors(legs);
       balancingState = BalancingState::NotBalancing;
-    //}
-  } else {
-    balancingAction.badDeltas = 0;
+    }
   }
+}
+
+bool Balancer::isBadDelta(float newPosition) {
+    // it's impossible no movement was made
+    if (newPosition == balancingAction.previousPosition) {
+      DPRINTLN(F("Delta is zero. Something might be wrong with gyro!"));
+      return true;
+    }
+
+    bool directionOk;
+    float delta = abs(newPosition - balancingAction.previousPosition);
+
+    // from + to zero or from - to zero
+    if (balancingAction.previousPosition < 0) {
+      directionOk = newPosition > balancingAction.previousPosition;
+    } else {
+      directionOk = newPosition < balancingAction.previousPosition;
+    }
+
+    if (!directionOk) {
+      DPRINTLN(F("Wrong direction!"));
+      return true;
+    }
+
+    if (delta > MAX_DELTA_POSITION) {
+      DPRINT(F("Delta not in range: "));
+      DPRINT(delta);
+      DPRINT(F(". Should be: "));
+      DPRINTLN(MAX_DELTA_POSITION);
+      return true;
+    }
+
+    return false;
 }
 
 void Balancer::determineBalancingState() {

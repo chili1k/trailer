@@ -124,7 +124,7 @@ const LegConfig legConfigD = {
 */
 
 // How long to wait after a leg motor is shut down in milliseconds.
-#define STOP_MOTORS_DLY 100
+#define STOP_MOTORS_DLY 200
 // Minimum time leg expands in milliseconds.
 #define EXPAND_LEG_DLY 1000
 

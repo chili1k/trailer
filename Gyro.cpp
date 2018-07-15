@@ -4,6 +4,7 @@
 #include "Debug.h"
 
 // https://github.com/wmarkow/Arduino/tree/afc25a64316e38f29cf887f546b8a09c73375838/hardware/arduino/avr/libraries/Wire/src
+// C:\Users\Pag_mini\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.21\libraries\Wire\src
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
@@ -150,7 +151,7 @@ void Gyro::readGyro() {
       }
 
       if (millis() - tmStartRead > 200) {
-        //DPRINTLN(F("I2C failed. Reinitializing ..."));
+        DPRINTLN(F("I2C failed. Reinitializing ..."));
         Wire.end();
         Wire.begin();
       }

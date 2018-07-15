@@ -25,6 +25,10 @@ void Motor::start(Direction newDirection) {
   }
 
   digitalWrite(powerPin, getPinMode(newDirection));
+  // also turn off direction pin (#savetheplanet)
+  if (newDirection == Stopped) {
+    digitalWrite(directionPin, MOTOR_OFF_PIN_MODE);
+  }
 
   currentDirection = newDirection;
 }

@@ -25,7 +25,7 @@ pitch  -  +------------+  + pitch
 #define SERIAL_BAUD_RATE 115200
 
 // Refresh display interval
-#define DISPLAY_REFRESH_MS 1000
+#define DISPLAY_REFRESH_MS 200
 
 // How many amps are flowing when leg is on ground.
 #define LEG_ON_GROUND_AMPS 10.0

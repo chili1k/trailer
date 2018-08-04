@@ -8,8 +8,8 @@
 #include <Arduino.h>
 #include <math.h>
 
-#define MAX_TRIES 10
-#define MAX_BAD_DELTAS 5
+#define MAX_TRIES 12
+#define MAX_BAD_DELTAS 8
 #define MAX_DELTA_POSITION 0.005
 #define BALANCING_UPDATE_INTERVAL 200
 
@@ -199,12 +199,17 @@ void Balancer::stateBalancingLoop() {
     return;
   }
 
-  if (balancingAction.tries > MAX_TRIES) {
+  if (balancingAction.tries >= MAX_TRIES) {
     DPRINTLN(F("Cannot balance. Max. tries exceeded."));
     setState(State::ErrorState);
   }
 
   if (balancingState == BalancingState::NotBalancing) {
+    if (balancingAction.tries > 0) {
+      // wait for leg/gyro to stabilize on subsequent tries
+      delay(EXPAND_LEG_DLY);
+    }
+
     determineBalancingState();
     if (balancingState != BalancingState::Balancing) {
       DPRINTLN(F("Cannot balance! Unknown gyro position."));
@@ -231,8 +236,6 @@ void Balancer::stateBalancingLoop() {
 
 void Balancer::loopBalancingStep() {
   bool isAxeBalanced;
-  // diff from start position
-  float delta;
   float newPosition;
 
   if (balancingAction.axe == Axe::Pitch) {
@@ -258,8 +261,7 @@ void Balancer::loopBalancingStep() {
     balancingAction.badDeltas++;
     if (balancingAction.badDeltas > MAX_BAD_DELTAS) {
       // something is wrong, rebalance
-      Serial.print(F("Bad delta: "));
-      Serial.println(delta, 4);
+      Serial.print(F("Max. bad deltas exceeded!"));
       LegUtil::stopAllMotors(legs);
       balancingState = BalancingState::NotBalancing;
     }
@@ -308,11 +310,13 @@ void Balancer::determineBalancingState() {
   DPRINT(F("Balancing try no. "));
   DPRINT(balancingAction.tries);
   DPRINT(F("/"));
-  DPRINTLN(MAX_TRIES);
+  DPRINT(MAX_TRIES);
+  DPRINT(F(" ["));
 
   balancingState = BalancingState::Balancing;
 
   if (abs(pitch) > abs(roll)) {
+    DPRINTLN(F("pitch]"));
     balancingAction.axe = Axe::Pitch;
     balancingAction.previousPosition = pitch;
 
@@ -327,6 +331,7 @@ void Balancer::determineBalancingState() {
       balancingState = BalancingState::Error; 
     }
   } else {
+    DPRINTLN(F("roll]"));
     balancingAction.axe = Axe::Roll;
     balancingAction.previousPosition = roll;
 
@@ -341,6 +346,9 @@ void Balancer::determineBalancingState() {
       balancingState = BalancingState::Error; 
     }
   }
+
+  DPRINT(F("Reference value: "));
+  DPRINTLN(balancingAction.previousPosition, 4);
 }
 
 void Balancer::expandLegs(Leg *leg1, Leg *leg2) {

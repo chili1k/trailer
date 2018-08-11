@@ -201,6 +201,7 @@ void Balancer::stateBalancingLoop() {
 
   if (balancingAction.tries >= MAX_TRIES) {
     DPRINTLN(F("Cannot balance. Max. tries exceeded."));
+    LegUtil::stopAllMotors(legs);
     setState(State::ErrorState);
   }
 

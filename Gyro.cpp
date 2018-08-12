@@ -85,12 +85,32 @@ If calibration was succesful write down your offsets so you can set them in your
   mpu.setZGyroOffset(36);
   */
   // -5530	-1940	1380	-19	1	37
+  /*
   mpu.setXAccelOffset(-5530);
   mpu.setYAccelOffset(-1940);
   mpu.setZAccelOffset(1380);
   mpu.setXGyroOffset(-19);
   mpu.setYGyroOffset(1);
   mpu.setZGyroOffset(37);
+  */
+//new setup (upside down calibration): 
+  /*
+  mpu.setXAccelOffset(-244);
+  mpu.setYAccelOffset(-6008);
+  mpu.setZAccelOffset(5688);
+  mpu.setXGyroOffset(-35);
+  mpu.setYGyroOffset(117);
+  mpu.setZGyroOffset(-23);
+  */
+// sensor under trailor face down
+// -5401	-1805	5229	-14	-3	65
+  mpu.setXAccelOffset(-5401);
+  mpu.setYAccelOffset(-1805);
+  mpu.setZAccelOffset(5229);
+  mpu.setXGyroOffset(-14);
+  mpu.setYGyroOffset(-3);
+  mpu.setZGyroOffset(65);
+
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {

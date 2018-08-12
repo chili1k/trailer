@@ -321,30 +321,49 @@ void Balancer::determineBalancingState() {
     balancingAction.axe = Axe::Pitch;
     balancingAction.previousPosition = pitch;
 
-    if (pitch > 0.0) {
-      balancingAction.legs[0] = &legs[LEG_A];
-      balancingAction.legs[1] = &legs[LEG_C];
-    } else if (pitch < 0.0){
-      balancingAction.legs[0] = &legs[LEG_D];
-      balancingAction.legs[1] = &legs[LEG_B];
-    } else {
-      DPRINTLN(F("Pitch should not be 0 at this point."));
-      balancingState = BalancingState::Error; 
+    if (!GYRO_XY_FACE_UP) {
+        if (pitch > 0.0 && !GYRO_XY_FACE_UP) {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_C)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_D)];
+        } else {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_A)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_B)];
+        }
+    }
+
+    // some complexities here because of different possible gyro rotations
+    if (GYRO_XY_FACE_UP) {
+        if (pitch > 0.0 && GYRO_XY_FACE_UP) {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_A)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_C)];
+        } else {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_D)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_B)];
+        }
     }
   } else {
     DPRINTLN(F("roll]"));
     balancingAction.axe = Axe::Roll;
     balancingAction.previousPosition = roll;
 
-    if (roll > 0.0) {
-      balancingAction.legs[0] = &legs[LEG_A];
-      balancingAction.legs[1] = &legs[LEG_B];
-    } else if (roll < 0.0) {
-      balancingAction.legs[0] = &legs[LEG_C];
-      balancingAction.legs[1] = &legs[LEG_D];
-    } else {
-      DPRINTLN(F("Roll should not be 0 at this point."));
-      balancingState = BalancingState::Error; 
+    if (!GYRO_XY_FACE_UP) {
+        if (roll > 0.0) {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_D)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_B)];
+        } else {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_A)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_C)];
+        }
+    }
+
+    if (GYRO_XY_FACE_UP) {
+        if (roll > 0.0) {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_A)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_B)];
+        } else {
+          balancingAction.legs[0] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_C)];
+          balancingAction.legs[1] = &legs[GYRO_LEG_TO_TRAILER_LEG(LEG_D)];
+        }
     }
   }
 

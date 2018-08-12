@@ -5,16 +5,18 @@
 #include "Arduino.h"
 
 /*
-
-      roll
-       -  A            B 
-pitch  -  +------------+  + pitch
-          |o  vcc      |
-          |            |
-          +------------+
-          C            D
-       +
-      roll
+A-------------------------------------C
+|                                     |
+|            A-------------C -        |
+|            |             |          |
+|            |             | pitch    |
+|            |             |          |--->
+|            |xy           |          |
+|            B-------------D +        |
+|             gyro facing up          |
+|            -    roll     +          |
+|                                     |
+B-------------------------------------D
 */
 
 //#define MODEL_UNO
@@ -25,7 +27,7 @@ pitch  -  +------------+  + pitch
 #define SERIAL_BAUD_RATE 115200
 
 // Refresh display interval
-#define DISPLAY_REFRESH_MS 200
+#define DISPLAY_REFRESH_MS 1000
 
 // How many amps are flowing when leg is on ground.
 #define LEG_ON_GROUND_AMPS 10.0
@@ -45,8 +47,27 @@ pitch  -  +------------+  + pitch
   #define GYRO_INTERRUPT_PIN 2
 #endif
 
-// Zero means all legs are in air.
+// At which trailer leg is gyro xy positioned:
+#define GYRO_XY_ORIENTATION LEG_B
+// true: xy sign looking up to the sky.
+// false: xy sign looking down to the ground.
+#define GYRO_XY_FACE_UP false
 
+// all possible gyro rotations
+const int gyroLegToTrailerLeg[4][4] = {
+  // gyro xy at Leg A
+  {LEG_C, LEG_A, LEG_D, LEG_B},
+  // gyro xy at Leg B (main position)
+  {LEG_A, LEG_B, LEG_C, LEG_D},
+  // gyro xy at Leg C
+  {LEG_D, LEG_C, LEG_B, LEG_A},
+  // gyro xy at Leg D
+  {LEG_B, LEG_D, LEG_A, LEG_C}
+};
+
+#define GYRO_LEG_TO_TRAILER_LEG(GYRO_LEG) (gyroLegToTrailerLeg[GYRO_XY_ORIENTATION][GYRO_LEG])
+
+// Zero means all legs are in air.
 const LegConfig legConfigA = {
   "LEG_A", // name
   35, // pinMotorDirection

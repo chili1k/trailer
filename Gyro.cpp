@@ -64,27 +64,9 @@ void Gyro::setup() {
 
   Serial.println(F("Initializing DMP..."));
   devStatus = mpu.dmpInitialize();
-  /*
--491	726	1609	141	0	-6
-
-Sensor readings with offsets:	8	8	16388	0	-2	0
-Your offsets:	-5471	-1884	1369	-21	-2	36
-
-Data is printed as: acelX acelY acelZ giroX giroY giroZ
-Check that your sensor readings are close to 0 0 16384 0 0 0
-If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)
-
-  */
   
-  /*
-  mpu.setXAccelOffset(-5471);
-  mpu.setYAccelOffset(-1884);
-  mpu.setZAccelOffset(1369);
-  mpu.setXGyroOffset(-21);
-  mpu.setYGyroOffset(-2);
-  mpu.setZGyroOffset(36);
-  */
-  // -5530	-1940	1380	-19	1	37
+  // sensor on testboard
+  // calibration face up GYRO_XY_ORIENTATION LEG_B
   /*
   mpu.setXAccelOffset(-5530);
   mpu.setYAccelOffset(-1940);
@@ -93,18 +75,8 @@ If calibration was succesful write down your offsets so you can set them in your
   mpu.setYGyroOffset(1);
   mpu.setZGyroOffset(37);
   */
-//new setup (upside down calibration): 
-  /*
-  mpu.setXAccelOffset(-244);
-  mpu.setYAccelOffset(-6008);
-  mpu.setZAccelOffset(5688);
-  mpu.setXGyroOffset(-35);
-  mpu.setYGyroOffset(117);
-  mpu.setZGyroOffset(-23);
-  */
-// sensor on trailer with duct tape face down
-// calibration face down
-// -5401	-1805	5229	-14	-3	65
+// sensor on trailer with duct tape
+// calibration face down GYRO_XY_ORIENTATION LEG_B
   /*
   mpu.setXAccelOffset(-5401);
   mpu.setYAccelOffset(-1805);
@@ -114,10 +86,8 @@ If calibration was succesful write down your offsets so you can set them in your
   mpu.setZGyroOffset(65);
   */
 
-  // sensor
-  //-260	-6072	5697	-34	114	-21
-// sensor under trailer
-// calibration face down
+  // sensor under trailer
+  // calibration face down GYRO_XY_ORIENTATION LEG_B
   mpu.setXAccelOffset(-260);
   mpu.setYAccelOffset(-6072);
   mpu.setZAccelOffset(5697);

@@ -4,20 +4,6 @@
 #include "Leg.h"
 #include "Arduino.h"
 
-/*
-A-------------------------------------C
-|                                     |
-|            A-------------C -        |
-|            |             |          |
-|            |             | pitch    |
-|            |             |          |--->
-|            |xy           |          |
-|            B-------------D +        |
-|             gyro facing up          |
-|            -    roll     +          |
-|                                     |
-B-------------------------------------D
-*/
 
 //#define MODEL_UNO
 #define MODEL_MEGA
@@ -47,6 +33,7 @@ B-------------------------------------D
   #define GYRO_INTERRUPT_PIN 2
 #endif
 
+// NOTE: Check Gyro.cpp for calibarion instructions.
 // At which trailer leg is gyro xy positioned:
 #define GYRO_XY_ORIENTATION LEG_B
 // true: xy sign looking up to the sky.

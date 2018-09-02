@@ -102,15 +102,28 @@ If calibration was succesful write down your offsets so you can set them in your
   mpu.setYGyroOffset(117);
   mpu.setZGyroOffset(-23);
   */
-// sensor under trailor face down
+// sensor on trailer with duct tape face down
+// calibration face down
 // -5401	-1805	5229	-14	-3	65
+  /*
   mpu.setXAccelOffset(-5401);
   mpu.setYAccelOffset(-1805);
   mpu.setZAccelOffset(5229);
   mpu.setXGyroOffset(-14);
   mpu.setYGyroOffset(-3);
   mpu.setZGyroOffset(65);
+  */
 
+  // sensor
+  //-260	-6072	5697	-34	114	-21
+// sensor under trailer
+// calibration face down
+  mpu.setXAccelOffset(-260);
+  mpu.setYAccelOffset(-6072);
+  mpu.setZAccelOffset(5697);
+  mpu.setXGyroOffset(-34);
+  mpu.setYGyroOffset(-114);
+  mpu.setZGyroOffset(21);
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {

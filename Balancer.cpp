@@ -16,7 +16,7 @@
 
 unsigned long lastBalancingUpdate;
 
-void Balancer::setup(GyroQuartiles *gyroQuartiles) {
+void Balancer::setup(GyroQuartiles *gyroQuartiles, TrailerStateObserver *serialObserver, TrailerStateObserver *buttonObserver) {
     gyro.setup();
 
     for (int i = 0; i < MAX_LEGS; i++) {
@@ -25,6 +25,9 @@ void Balancer::setup(GyroQuartiles *gyroQuartiles) {
 
     toPositionController.setup(legs);
     toGroundController.setup(legs, gyroQuartiles);
+
+    this->serialObserver = serialObserver;
+    this->buttonObserver = buttonObserver;
 }
 
 void Balancer::loop() {
@@ -104,6 +107,11 @@ void Balancer::stopAllLegs() {
 
 void Balancer::setState(State newState) {
     state = newState;
+
+    if (serialObserver != NULL)
+        serialObserver->notifyStateChange(state);
+    if (buttonObserver!= NULL)
+        buttonObserver->notifyStateChange(state);
 }
 
 void Balancer::moveToStateLoop(const char* stateName, State state) {

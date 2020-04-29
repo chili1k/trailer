@@ -15,6 +15,10 @@ https://github.com/sudar/Arduino-Makefile
 To setup vim:
 https://collectiveidea.com/blog/archives/2017/04/05/arduino-programming-in-vim
 
+## I2C lib issues
+
+If FIFO keeps resetting try configuring the `MPU6050_DMP_FIFO_RATE_DIVISOR` in Gyro.cpp.
+
 To stop I2C library from hanging, patch Wire lib with contents from i2c_patch subdirectory. Directories:
  * Mac: /Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/
  * Windows: Somewhere in c:\users\YourUserName\AppData\Local\Arduino

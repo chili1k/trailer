@@ -3,49 +3,36 @@
 
 #include <Bounce2.h>
 #include "GyroQuartiles.h"
+#include "ViewObserver.h"
 
 #include "Leg.h"
 #include "Balancer.h"
-#include "SerialDebugWriter.h"
+#include "SerialView.h"
+#include "ButtonView.h"
 #include "util/Timer.h"
 
-/**
- Controls trailer based on user input.
- */
-class TrailerController {
+class TrailerController : public ViewObserver {
     public:
-        TrailerController():
-            timestamp(0),
-            lastRefreshTime(0) {}
-
         void setup();
         void loop();
+        void onCommand(const CommandResult commandResult);
 
     private:
-        void handleInput();
-        void handleEmergencyButton();
-        void startSingleMotor();
-        void setPWM();
+        void handleCommandResult(CommandResult commandResult);
+        void startSingleMotor(int motorId, int direction);
+        void setPWM(int legId, int direction);
+        void handleCommand(CommandResult commandResult);
+
         void blinkLed();
-        void refreshDisplay();
-        void refreshSerialDebug();
-        void printHeader();
-        void printTrailerState();
-        void printLeg(Leg *leg);
-        void printGyro();
-        void printAmpers(Leg *leg);
-        void printLegPosition(Leg *leg);
-        void printCommands();
-        void printTitle();
+        void handleEmergencyButton();
 
         Balancer balancer;
         Timer startTimer;
-        Timer serialDebugTimer;
-        unsigned long timestamp;
-        unsigned long lastRefreshTime;
+        Timer blinkLedTimer;
         Bounce emergencyButton;
         GyroQuartiles gyroQuartiles;
-        SerialDebugWriter serialDebugWriter;
+        SerialView serialView;
+        ButtonView buttonView;
 };
 
 #endif

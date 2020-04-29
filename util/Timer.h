@@ -5,7 +5,7 @@ class Timer {
     public:
         void start() {
             startTime = millis();
-            isStarted = true;
+            _isStarted = true;
         }
 
         void restart() {
@@ -13,14 +13,18 @@ class Timer {
         }
 
         void stop() {
-            isStarted = false;
+            _isStarted = false;
+        }
+
+        bool isStarted() {
+            return _isStarted;
         }
 
         unsigned long elapsedMs() {
             return millis() - startTime;
         }
     private:
-        bool isStarted = false;
+        bool _isStarted = false;
         unsigned long startTime;
 };
 

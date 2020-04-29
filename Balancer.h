@@ -1,6 +1,7 @@
 #ifndef Balancer_h
 #define Balancer_h
 
+#include "TrailerStateObserver.h"
 #include "BalancerState.h"
 #include "ToPositionController.h"
 #include "ToGroundController.h"
@@ -54,9 +55,10 @@ Leg Down
 
 class Balancer {
   public:
-    void setup(GyroQuartiles *gyroQuartiles);
+    void setup(GyroQuartiles *gyroQuartiles, TrailerStateObserver *trailerObserver, TrailerStateObserver *buttonObserver);
     void setup();
     void loop();
+
     // START Commands
     void toZero();
     void toGround();
@@ -81,6 +83,11 @@ class Balancer {
     State state = State::NoState;
     BalancingState balancingState = BalancingState::NotBalancing;
     BalancingAction balancingAction;
+
+    TrailerStateObserver *serialObserver = NULL;
+    TrailerStateObserver *buttonObserver = NULL;
+
+    void registerObservers();
 
     void moveToStateLoop(const char* stateName, State state);
     void moveToGroundLoop();

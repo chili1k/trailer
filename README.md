@@ -6,7 +6,7 @@ Trailer balancer written for the Arduino platform.
 
 Install MPU, I2C and Debounce2 library using Arudino IDE:
 
-* https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050
+* https://github.com/chili1k/i2cdevlib/tree/master/Arduino/MPU6050 (for of Jeff Rowbergs lib)
 * https://github.com/thomasfredericks/Bounce2
 
 Uses Arduino-Makefile project:
@@ -22,7 +22,7 @@ To stop I2C library from hanging, patch Wire lib with contents from i2c_patch su
  Original commit: https://github.com/wmarkow/Arduino/commits/b325055fda2d3b22c48ed6a316a1efa6f2f10a08
 
 Discussions:
- * https://github.com/jrowberg/i2cdevlib/issues/252 
+ * https://github.com/jrowberg/i2cdevlib/issues/252
  * https://github.com/arduino/Arduino/issues/1476
 
 
@@ -34,7 +34,7 @@ make upload
 make monitor
 ```
 
-To exit the monitor use C k. Monitor is actually screen.
+To exit the monitor use C k. To pause monitor press C ESC.  Monitor is actually screen.
 
 ## Calibration
 **Reset arduino before doing calibration!**
@@ -60,7 +60,7 @@ A-------------------------------------C
 |                                     |
 B-------------------------------------D
 
-Calibration: gyro facing down
+Calibration: gyro facing down (this is production)
 A-------------------------------------C
 |                                     |
 |                                     |
@@ -83,9 +83,9 @@ Example for how pitch, roll signs are treated:
          \
 pitch: +  -
 2) pitch=-0.3
-       
+
          /
-        / 
+        /
        /
 pitch: +  -
 ```

@@ -25,7 +25,6 @@ class Gyro {
     float pitch;
     float roll;
     void readGyro();
-    void printPitchRoll();
 };
 
 #endif

@@ -13,47 +13,58 @@
 #define LEG_D 3
 
 enum class LegPosition { Unknown, Expanding, Collapsing, Zero, Final };
+enum class MotorState { Forward, Reverse, Stopped };
 
 struct LegConfig {
-  const char *name;
-  int pinMotorDirection;
-  int pinMotorPower;
-  int pinZeroPos;
-  int pinFinalPos;
-  int pinPowerMeter;
+    const char *name;
+    Motor *motor;
+    // 0-255
+    int pwm;
+    int pinMotorDirection1;
+    int pinMotorDirection2;
+    int pinMotorPower;
+    int pinZeroPos;
+    int pinFinalPos;
+    int pinPowerMeter;
 };
 
 class Leg {
-  public:
-    Leg(LegConfig legConfig);
-    void setup();
-    void loop();
-    const char *getName();
+    public:
+        Leg(LegConfig legConfig);
+        void setup();
+        void loop();
+        const char *getName();
 
-    // Actions
-    void expand(); 
-    void collapse();
-    void stop();
+        // Actions
+        void expand();
+        void collapse();
+        void stop();
+        void setPWM(int pwm);
 
-    bool isOnGround();
-    bool isMotorRunning();
-    bool isMotorStopped();
-    bool isHighAmperage();
-    bool isZero();
-    bool isFinal();
-    LegPosition getPosition();
-    float getAmpers();
-    
-  private:
-    Motor motor;
-    bool _isOnGround;
-    bool _isHighAmperage;
-    LegConfig legConfig;
-    Smooth smoother;
-    Bounce debounceZero;
-    Bounce debounceFinal;
+        bool isOnGround();
+        bool isMotorRunning();
+        bool isMotorStopped();
+        bool isHighAmperage();
+        bool isZero();
+        bool isFinal();
+        LegPosition getPosition();
+        int getPWM();
+        float getAmpers();
+        void legStateToString(char *&state);
 
-    void loopCheckIfOnGround();
+    private:
+        Motor *motor;
+        MotorConfig motorConfig;
+
+        MotorState motorState;
+        bool _isOnGround;
+        bool _isHighAmperage;
+        LegConfig legConfig;
+        Smooth smoother;
+        Bounce debounceZero;
+        Bounce debounceFinal;
+
+        void loopCheckIfOnGround();
 };
 
 #endif

@@ -1,12 +1,12 @@
-#ifndef Balancer_h 
-#define Balancer_h 
+#ifndef Balancer_h
+#define Balancer_h
 
+#include "BalancerState.h"
+#include "ToPositionController.h"
+#include "ToGroundController.h"
 #include "Leg.h"
 #include "Gyro.h"
 #include "Config.h"
-
-enum class State { NoState, ZeroState, ToZeroState, ToGroundState, ToFinalState, BalancedState, BalancingState, GroundState, FinalState, ErrorState };
-enum class BalancingState { NotBalancing, Balancing, Done, Error };
 
 struct BalancingAction {
   int tries;
@@ -54,6 +54,7 @@ Leg Down
 
 class Balancer {
   public:
+    void setup(GyroQuartiles *gyroQuartiles);
     void setup();
     void loop();
     // START Commands
@@ -64,6 +65,8 @@ class Balancer {
     void stopAllLegs();
     void forceExpandLeg(int legId);
     void forceCollapseLeg(int legId);
+    void forcePWM(int legId, int pwm);
+    void balancerStateToString(char *&strState);
     // END Commands
 
     Leg *getLegs();
@@ -73,10 +76,14 @@ class Balancer {
   private:
     Leg legs[MAX_LEGS] = { Leg(legConfigA), Leg(legConfigB), Leg(legConfigC), Leg(legConfigD) };
     Gyro gyro;
+    ToPositionController toPositionController;
+    ToGroundController toGroundController;
     State state = State::NoState;
     BalancingState balancingState = BalancingState::NotBalancing;
     BalancingAction balancingAction;
 
+    void moveToStateLoop(const char* stateName, State state);
+    void moveToGroundLoop();
     void setState(State newState);
 
     void expandLegs(Leg *leg1, Leg *leg2);
